@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 
-from api.lock import lock
-from api.models.accountModel import AccountModel, auth, g
+from lock import lock
+from models.accountModel import AccountModel, auth, g
 
 
 class AccountsInfo(Resource):

@@ -11,11 +11,12 @@ from flask_cors import CORS
 
 from db import db
 # models imports
-from api.models.accountModel import AccountModel
+from models.accountModel import AccountModel
 # resources imports
 from resources.account import Accounts
 from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder,GameDetail,GameFilters
+
 
 app = Flask(__name__)
 environment = config['development']
