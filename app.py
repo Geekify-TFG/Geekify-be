@@ -6,17 +6,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
 from bson.objectid import ObjectId
 from flask_restful import Api
+
+from resources.collections import Collections, CollectionsList, CollectionGame
 from config import config
 from flask_cors import CORS
 
 from db import db
 # models imports
 from models.accountModel import AccountModel
+from models.collectionModel import CollectionModel
 # resources imports
 from resources.account import Accounts
 from resources.login import LogIn
-from resources.games import Games, GamesByTitle, GamesByOrder,GameDetail,GameFilters
-
+from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters
 
 app = Flask(__name__)
 environment = config['development']
@@ -30,20 +32,10 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 
 db.get_instance().init_app(app)
 AccountModel.collection = db.get_database.accounts
+CollectionModel.collection = db.get_database.collections
 
-CONNECTION_STRNG = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test?retryWrites=true&w=majority"
-mongo = pymongo.MongoClient(CONNECTION_STRNG, tls=True, tlsAllowInvalidCertificates=True)
-
-
-@app.errorhandler(404)
-def not_found(error=None):
-    message = jsonify({
-        'message': 'Resource not found: ' + request.url,
-        'status': 404,
-    })
-    message.status_code = 404
-    return message
-
+CONNECTION_STRING = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test?retryWrites=true&w=majority"
+mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertificates=True)
 
 api.add_resource(Accounts, '/account/email/<string:email>', '/account/id/<string:id>', '/account/user')
 api.add_resource(LogIn, '/login')
@@ -53,5 +45,9 @@ api.add_resource(GameDetail, '/game/<string:id>')
 api.add_resource(GamesByTitle, '/games/title/<string:title>')
 api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
+
+api.add_resource(Collections, '/collection', '/collection/<string:id>')
+api.add_resource(CollectionsList, '/collections')
+api.add_resource(CollectionGame, '/collectionGame/<string:id>')
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
