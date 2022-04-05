@@ -82,6 +82,38 @@ class Collections(Resource):
             except Exception as e:
                 return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
 
+    def put(self, email=None, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+            parser.add_argument(CollectionModel.title_col_name, type=str, required=False)
+            parser.add_argument(CollectionModel.image_col_name, type=str, required=False)
+            parser.add_argument(CollectionModel.num_games_col_name, type=str, required=False)
+            parser.add_argument(CollectionModel.games_col_name, type=str, required=False)
+            parser.add_argument(CollectionModel.user_email_col_name, type=str, required=False)
+
+            parser.add_argument('title', type=str, required=False)
+            parser.add_argument('image', type=str, required=False)
+
+            data = parser.parse_args()
+
+            if data:
+                try:
+                    title = data[CollectionModel.title_col_name] if data[CollectionModel.title_col_name] else None
+                    image = data[CollectionModel.image_col_name] if data[CollectionModel.image_col_name] else None
+
+                    collection = CollectionModel.find_collection(user_email=email, id=id)
+                    if collection and collection.exists:
+
+                        collection.update_document(
+                            title=title, image=image
+                        )
+                        return {'collection': collection.json()}, 201
+                    else:
+                        return {'collection': {}}, 404
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {}:{}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 404
+
 
 class CollectionsList(Resource):
     @auth.login_required(role=['user', 'admin'])
