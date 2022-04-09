@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 
-from api.lock import lock
-from api.models.accountModel import AccountModel, auth, g
+from lock import lock
+from models.accountModel import AccountModel, auth, g
 
 
 class AccountsInfo(Resource):
@@ -78,6 +78,9 @@ class Accounts(Resource):
                         try:
                             # create new account
                             account = AccountModel(email=eml, password=password, name=name)
+                            collection = CollectionModel(title="Favorites", user_email=eml)
+                            collection.save_to_db()
+
                             account.hash_password()
                             my_json = account.save_to_db()
                             return {"account": my_json}, 201

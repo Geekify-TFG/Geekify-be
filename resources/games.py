@@ -2,7 +2,7 @@ from flask_restful import Resource, reqparse
 import requests
 from bson import json_util
 
-from api.lock import lock
+from lock import lock
 
 API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 api_rawg = "https://api.rawg.io/api/games?key=" + API_KEY
