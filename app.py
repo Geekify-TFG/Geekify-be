@@ -1,9 +1,15 @@
 import pymongo
+import requests
 from decouple import config as config_decouple
-from flask import Flask
+from flask import Flask, request, jsonify, Response
+from werkzeug.security import generate_password_hash, check_password_hash
+from bson import json_util
+from bson.objectid import ObjectId
 from flask_restful import Api
 
-from resources.collections import Collections, CollectionsList, CollectionGame
+from api.resources.collections import Collections, CollectionsList, CollectionGame
+from api.resources.comments import Comments, CommentsList
+from api.resources.news import News
 from config import config
 from flask_cors import CORS
 
@@ -11,11 +17,11 @@ from db import db
 # models imports
 from models.accountModel import AccountModel
 from models.collectionModel import CollectionModel
+from models.commentModel import CommentModel
 # resources imports
 from resources.account import Accounts
 from resources.login import LogIn
-from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters
-from resources.news import News
+from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList
 
 app = Flask(__name__)
 environment = config['development']
@@ -30,6 +36,7 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 db.get_instance().init_app(app)
 AccountModel.collection = db.get_database.accounts
 CollectionModel.collection = db.get_database.collections
+CommentModel.collection = db.get_database.comments
 
 CONNECTION_STRING = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test?retryWrites=true&w=majority"
 mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertificates=True)
@@ -44,6 +51,11 @@ api.add_resource(GameDetail, '/game/<string:id>')
 api.add_resource(GamesByTitle, '/games/title/<string:title>')
 api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
+api.add_resource(GameCommentsList, '/gameComments/<string:id>')
+
+# Comments
+api.add_resource(CommentsList, '/comments')
+api.add_resource(Comments, '/comment/<string:id>')
 
 # Collections
 api.add_resource(Collections, '/collection', '/collection/<string:id>', '/collections/<string:email>/')

@@ -3,6 +3,7 @@ import requests
 from bson import json_util
 
 from lock import lock
+from models.commentModel import CommentModel
 
 API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 api_rawg = "https://api.rawg.io/api/games?key=" + API_KEY
@@ -135,3 +136,16 @@ class GameFilters(Resource):
         api_detail += api_url + "ordering=-metacritic&key=" + API_KEY
         games = requests.get(api_detail).json()
         return {'games': games}, 200
+
+
+class GameCommentsList(Resource):
+
+    def get(self, id):
+        with lock.lock:
+            try:
+                ret = CommentModel.find_by_game(id)
+                if len(ret) == 0:
+                    return {'comments': {}}, 204
+                return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
+            except Exception as e:
+                return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500

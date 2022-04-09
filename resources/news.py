@@ -6,7 +6,6 @@ from lock import lock
 
 API_KEY = '7c832cfb4078497f87bc53eec73c90d1'
 api_news = "https://newsapi.org/v2/everything?apiKey=" + API_KEY
-# api_rawg = "https://api.rawg.io/api/games/lists/main?key=" + API_KEY
 response = requests.get(api_news)
 
 
