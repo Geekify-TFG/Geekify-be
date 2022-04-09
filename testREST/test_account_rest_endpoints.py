@@ -7,11 +7,10 @@ from random import randint
 
 import requests
 
-from api.app import AccountModel
+from app import AccountModel
 
 
 class AccountsRESTTest(unittest.TestCase):
-
 
     def test_request_get_accounts(self):
         account_doc = {
@@ -39,4 +38,3 @@ class AccountsRESTTest(unittest.TestCase):
         finally:
             account.delete_from_db()
 
-    

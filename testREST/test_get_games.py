@@ -6,8 +6,6 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 import requests
 
-from api.app import AccountModel
-
 
 class GamesREST(unittest.TestCase):
 

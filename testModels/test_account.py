@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 from bson import ObjectId
 
-from api.app import AccountModel
+from app import AccountModel
 
 
 class AccountModelTest(unittest.TestCase):
