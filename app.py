@@ -1,15 +1,9 @@
 import pymongo
-import requests
 from decouple import config as config_decouple
-from flask import Flask, request, jsonify, Response
-from werkzeug.security import generate_password_hash, check_password_hash
-from bson import json_util
-from bson.objectid import ObjectId
+from flask import Flask
 from flask_restful import Api
 
-from api.resources.collections import Collections, CollectionsList, CollectionGame
-from api.resources.comments import Comments, CommentsList
-from api.resources.news import News
+from resources.collections import Collections, CollectionsList, CollectionGame
 from config import config
 from flask_cors import CORS
 
@@ -18,10 +12,13 @@ from db import db
 from models.accountModel import AccountModel
 from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
+
 # resources imports
 from resources.account import Accounts
+from resources.comments import CommentsList, Comments
 from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList
+from resources.news import News
 
 app = Flask(__name__)
 environment = config['development']
