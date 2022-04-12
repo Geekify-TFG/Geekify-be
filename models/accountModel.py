@@ -23,7 +23,7 @@ class AccountModel(DocumentModel):
     mongodb - collection called accounts
     """
     __column_names__ = ['email', 'password', 'name',
-                        'initial_date', 'photo','is_admin']
+                        'initial_date', 'photo', 'is_admin', 'likes']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -32,6 +32,7 @@ class AccountModel(DocumentModel):
     initial_date_col_name = __column_names__[3]
     photo_col_name = __column_names__[4]
     admin_col_name = __column_names__[5]
+    likes_col_name = __column_names__[6]
 
     __password_hashed__ = False
 
@@ -42,7 +43,8 @@ class AccountModel(DocumentModel):
             name=None,
             photo='https://source.unsplash.com/random',
             doc=None,
-            is_admin=0
+            is_admin=0,
+            likes=[]
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -64,6 +66,7 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.photo_col_name)] = photo
             columns['{0}'.format(self.initial_date_col_name)] = date.today().strftime("%d/%m/%Y")
             columns['{0}'.format(self.admin_col_name)] = int(is_admin)
+            columns['{0}'.format(self.likes_col_name)] = likes
             self.set_doc_ref(columns.copy())
 
     # Create new document -- private method
@@ -99,7 +102,7 @@ class AccountModel(DocumentModel):
 
     def update_document(
             self, password=None, email=None, name=None,
-            photo=None, is_admin=None
+            photo=None, is_admin=None, likes=None
 
     ):
         # if it's already exists then update
@@ -116,6 +119,9 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.photo_col_name, str(photo))
             if is_admin:
                 self.__update_column__(self.admin_col_name, int(is_admin))
+
+            if likes:
+                self.__update_column__(self.likes_col_name, likes)
             self.collection.find_one_and_update(
                 {'_id': self.id},
                 {
@@ -145,6 +151,38 @@ class AccountModel(DocumentModel):
 
     def delete_from_db(self):
         super(AccountModel, self).delete_from_db()
+
+    def add_like(self, game, rate):
+        self.collection.find_one_and_update(
+            {'_id': self.id},
+            {
+                '$push': {
+                    "likes": {'game_id': game, 'rating': rate}
+                }
+
+            }
+        )
+
+    def get_likes(self):
+        return self.get_column(col_name='likes', col_type=list)
+
+    def add_or_remove_like(self, game, rate):
+        my_likes = self.get_likes()
+        my_likes.append({'game_id': game, 'rating': rate})
+        self.update_document(likes=my_likes)
+
+    def update_rate(self, game, rate):
+        my_likes = self.get_likes()
+        new_rate = ([item for item in my_likes if item.get('game_id') != game])
+        new_rate.append({'game_id': game, 'rating': rate})
+        self.update_document(likes=new_rate)
+
+    def remove_like(self, game):
+        my_likes = self.get_likes()
+        print(my_likes)
+        my_likes.remove({"key": game})
+
+        self.update_document(likes=my_likes)
 
     @classmethod
     def find_account(cls, email=None, id=None):
@@ -198,7 +236,6 @@ def verify_password(token, password):
         if password and account.verify_password(password=password):
             g.user = account
         return account
-
 
 
 @auth.get_user_roles

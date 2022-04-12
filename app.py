@@ -14,7 +14,7 @@ from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
 
 # resources imports
-from resources.account import Accounts
+from resources.account import Accounts, AccountLike
 from resources.comments import CommentsList, Comments
 from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList
@@ -39,8 +39,10 @@ CONNECTION_STRING = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test
 mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertificates=True)
 
 # Account
+
 api.add_resource(Accounts, '/account/email/<string:email>', '/account/id/<string:id>', '/account/user')
 api.add_resource(LogIn, '/login')
+api.add_resource(AccountLike, '/account/like/<string:id>')
 
 # Games
 api.add_resource(Games, '/games')
@@ -61,6 +63,5 @@ api.add_resource(CollectionGame, '/collectionGame/<string:id>')
 
 # News
 api.add_resource(News, '/news')
-
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

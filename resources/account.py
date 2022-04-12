@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 
 from lock import lock
 from models.accountModel import AccountModel, auth, g
+from models.collectionModel import CollectionModel
 
 
 class AccountsInfo(Resource):
@@ -23,31 +24,13 @@ class AccountsInfo(Resource):
 
 class Accounts(Resource):
 
-    @auth.login_required(role=['user', 'admin'])
     def get(self, email=None, id=None):
         with lock.lock:
             try:
                 account = AccountModel.find_account(email=email, id=id)
-                if account.exists:
-                    try:
-                        if not (
-                                g.user.doc_ref[
-                                    AccountModel.email_col_name
-                                ]
-                                ==
-                                account.doc_ref[
-                                    AccountModel.email_col_name
-                                ]
-                        ):
-                            raise PermissionError('Error. User not allowed!')
-                    except PermissionError as e:
-                        return {'message': f'{type(e)}:{e}'}, 403  # forbidden
-                    except Exception as e:
-                        return {'message': f'Error: {type(e)}:{e}'}, 500
-                    my_json = account.json()
-                    return {'account': my_json}, 200
-                else:
-                    return {'account': {}}, 404  # not found
+
+                my_json = account.json().get('value')
+                return {'account': my_json}, 200
             except Exception as e:
                 return {'message': 'Account with email [{0}] doesn\'t exists'.format(email)}, 404
 
@@ -80,7 +63,6 @@ class Accounts(Resource):
                             account = AccountModel(email=eml, password=password, name=name)
                             collection = CollectionModel(title="Favorites", user_email=eml)
                             collection.save_to_db()
-
                             account.hash_password()
                             my_json = account.save_to_db()
                             return {"account": my_json}, 201
@@ -93,3 +75,45 @@ class Accounts(Resource):
                 except Exception as e:
                     return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
             return {'message': 'An error occurred parsing arguments.'}, 400
+
+
+class AccountLike(Resource):
+
+    def post(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('rate', type=int, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                rate = data['rate']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    #accounts.add_or_remove_like(id,rate)
+                    accounts.add_or_remove_like(id,rate)
+                return {'message': 'Liked added successfully'}, 201
+
+    def put(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('rate', type=int, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                rate = data['rate']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    #accounts.add_or_remove_like(id,rate)
+                    accounts.update_rate(id,rate)
+                return {'message': 'Liked added successfully'}, 201
+
+
+
+
+

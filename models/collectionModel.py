@@ -1,10 +1,5 @@
-import os
-from datetime import date
 
-from flask import g, current_app
 from flask_httpauth import HTTPBasicAuth
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-from passlib.apps import custom_app_context as pwd_context
 
 from models.abstract.model_definition import DocumentModel
 
@@ -102,10 +97,10 @@ class CollectionModel(DocumentModel):
             if image:
                 self.__update_column__(self.image_col_name, str(image))
             if num_games:
-                self.__update_column__(self.num_games_col_name, num_games)
+                self.__update_column__(self.num_games_col_name, games)
             if games:
                 self.__update_column__(self.games_col_name, games)
-            if games:
+            if user_email:
                 self.__update_column__(self.user_email_col_name, user_email)
             self.collection.find_one_and_update(
                 {'_id': self.id},
@@ -145,6 +140,7 @@ class CollectionModel(DocumentModel):
             }
         )
 
+
     @classmethod
     def find_by_useremail(cls, user_email) -> dict:
         return cls.find_collection(user_email=user_email)
@@ -165,6 +161,4 @@ class CollectionModel(DocumentModel):
                 "You need to give one the following: "
                 "an existing title or existing user id"
             )
-        print(collection)
-
         return collection
