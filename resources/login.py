@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from lock import lock
-from models.accountModel import AccountModel
+from models.accountModel import AccountModel, auth
 
 
 class LogIn(Resource):
