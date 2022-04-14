@@ -97,7 +97,6 @@ class ForumsList(Resource):
         with lock.lock:
             try:
                 ret = ForumModel.get_all()
-                print({key: ret[key].json()['value'] for key in ret.keys()})
                 if len(ret) == 0:
                     return {'forums': {}}, 204
                 return {'forums': {key: ret[key].json()['value'] for key in ret.keys()}}, 202

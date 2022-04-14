@@ -2,7 +2,7 @@ import requests
 from flask_restful import Resource, reqparse
 
 from lock import lock
-from models.accountModel import  AccountModel, auth
+from models.accountModel import AccountModel, auth
 from models.commentModel import CommentModel
 
 API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
@@ -56,7 +56,7 @@ class Comments(Resource):
                         response = requests.get(api_game)
                         if response.status_code == 200:
                             try:
-                                comment = CommentModel(date, content, username, game_id,image_user)
+                                comment = CommentModel(date, content, username, game_id, image_user)
                                 my_json = comment.save_to_db()
                                 if comment and comment.exists:
                                     try:
@@ -94,14 +94,12 @@ class Comments(Resource):
                 return {'message': 'Internal server error. Error {}:{}'.format(type(e), e)}, 500
 
 
-
 class CommentsList(Resource):
 
     def get(self):
         with lock.lock:
             try:
                 ret = CommentModel.get_all()
-                print(ret)
                 if len(ret) == 0:
                     return {'comments': {}}, 204
                 return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
