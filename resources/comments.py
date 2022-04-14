@@ -93,63 +93,6 @@ class Comments(Resource):
             except Exception as e:
                 return {'message': 'Internal server error. Error {}:{}'.format(type(e), e)}, 500
 
-    def put(self, id):
-        with lock.lock:
-            parser = reqparse.RequestParser()
-
-            parser.add_argument('date', type=str, required=True, help="This field cannot be left blank.")
-            parser.add_argument('content', type=str, required=True, help="This field cannot be left blank.")
-            parser.add_argument('user', type=str, required=True, help="This field cannot be left blank.")
-            parser.add_argument('publication_id', type=str, required=True, help="This field cannot be left blank.")
-
-            data = parser.parse_args()
-            if data:
-                date = data['date']
-                content = data['content']
-                user = data['user']
-                publication_id = data['publication_id']
-
-                if user:
-                    accounts = AccountModel.find_account(email=user)
-                    if accounts.exists:
-                        publication = PublicationModel.find_by_id(publication_id)
-                        if publication.exists:
-                            try:
-                                comment = CommentModel(date, content, user, publication_id)
-                                my_json = comment.save_to_db()
-                                if comment and comment.exists:
-                                    try:
-                                        comment_replied = CommentModel.find_by_id(id)
-                                        if comment_replied and comment_replied.exists:
-                                            comment_replied.add_reply_comment_id(comment.get_id())
-                                            return {'comment': my_json}, 201
-                                        else:
-                                            return {
-                                                       'message': 'The comment you are replying to does not exist'
-                                                                  'error'
-                                                   }, 500
-                                    except Exception as e:
-                                        comment.delete_from_db()
-                                        return {
-                                                   'message': 'Internal server error. Could not create comment due an '
-                                                              'Error. '
-                                                              'Error {0}:{1}'.format(type(e), e)
-                                               }, 500
-                                else:
-                                    return {
-                                               'message': 'Internal server error. Could not create comment. Unknown '
-                                                          'error'
-                                           }, 500
-                            except Exception as e:
-
-                                return {
-                                           'message': 'Internal server error. Could not create comment due an Error. '
-                                                      'Error {0}:{1}'.format(type(e), e)
-                                       }, 500
-                        else:
-                            return {'message': 'Publication not found.'}, 403
-                return {'message': 'User not found.'}, 404
-            return
 
 
 class CommentsList(Resource):

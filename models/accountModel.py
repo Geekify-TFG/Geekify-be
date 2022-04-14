@@ -1,5 +1,6 @@
 import os
 from datetime import date
+import random
 
 from flask import g, current_app
 from flask_httpauth import HTTPBasicAuth
@@ -15,6 +16,16 @@ auth = HTTPBasicAuth()
     all attribute are defined here and is a must have value
     account (email, password(encrypted), name, ...)
 '''
+
+
+Photo = [
+    "https://i.picsum.photos/id/473/200/200.jpg?hmac=lXsJQxtsh73ygSCMmcWA-YqIpQ4FjdxUYkkuLTAPBfM",
+    "https://i.picsum.photos/id/305/200/200.jpg?hmac=GAm9fW477iVRZTOeQCdEqLVug4lTf8wnHHzLof8RbFQ",
+    "https://i.picsum.photos/id/400/200/200.jpg?hmac=YLB07yPNCdu_zyt5Mr1eLqUtqY7nPOmnJBvJea4s7Uc",
+    "https://i.picsum.photos/id/955/200/200.jpg?hmac=_m3ln1pswsR9s9hWuWrwY_O6N4wizKmukfhvyaTrkjE",
+    "https://i.picsum.photos/id/1066/200/200.jpg?hmac=BHYYzH0KERL1WifyefL6hVVg0wURJUgTaByr75WmJug",
+    "https://i.picsum.photos/id/504/200/200.jpg?hmac=uNktbiKQMUD0MuwgQUxt7R2zjHBGFxyUSG3prhX0FWM",
+]
 
 
 class AccountModel(DocumentModel):
@@ -41,7 +52,7 @@ class AccountModel(DocumentModel):
             password=None,
             email=None,
             name=None,
-            photo='https://source.unsplash.com/random',
+            photo=(random.choice(Photo)),
             doc=None,
             is_admin=0,
             likes=[]

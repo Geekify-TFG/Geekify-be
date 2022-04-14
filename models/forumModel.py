@@ -11,6 +11,7 @@ auth = HTTPBasicAuth()
     account (email, password(encrypted), name, ...)
 '''
 
+
 Photo = [
     "https://i.picsum.photos/id/473/200/200.jpg?hmac=lXsJQxtsh73ygSCMmcWA-YqIpQ4FjdxUYkkuLTAPBfM",
     "https://i.picsum.photos/id/305/200/200.jpg?hmac=GAm9fW477iVRZTOeQCdEqLVug4lTf8wnHHzLof8RbFQ",
@@ -20,8 +21,7 @@ Photo = [
     "https://i.picsum.photos/id/504/200/200.jpg?hmac=uNktbiKQMUD0MuwgQUxt7R2zjHBGFxyUSG3prhX0FWM",
 ]
 
-
-class CollectionModel(DocumentModel):
+class ForumModel(DocumentModel):
     """
    class representing account model.
    mongodb - collection called accounts
@@ -62,7 +62,7 @@ class CollectionModel(DocumentModel):
         else:
             columns['{0}'.format(self.title_col_name)] = str(title)
             columns['{0}'.format(self.image_col_name)] = image
-            columns['{0}'.format(self.num_games_col_name)] = len(self.games_col_name)
+            columns['{0}'.format(self.num_games_col_name)] = str(num_games)
             columns['{0}'.format(self.games_col_name)] = games
             columns['{0}'.format(self.user_email_col_name)] = user_email
             self.set_doc_ref(columns.copy())
@@ -106,11 +106,9 @@ class CollectionModel(DocumentModel):
             if image:
                 self.__update_column__(self.image_col_name, str(image))
             if num_games:
-                self.__update_column__(self.num_games_col_name, num_games)
+                self.__update_column__(self.num_games_col_name, games)
             if games:
                 self.__update_column__(self.games_col_name, games)
-                self.__update_column__(self.num_games_col_name, len(games))
-
             if user_email:
                 self.__update_column__(self.user_email_col_name, user_email)
             self.collection.find_one_and_update(
@@ -151,18 +149,13 @@ class CollectionModel(DocumentModel):
             }
         )
 
-    def increment_len(self):
-        games = self.get_column(col_name='games', col_type=list)
-        print(len(games))
-        num_games = len(games) + 1
-        self.update_document(num_games=num_games)
 
     @classmethod
     def find_by_useremail(cls, user_email) -> dict:
         return cls.find_collection(user_email=user_email)
 
     def delete_from_db(self):
-        super(CollectionModel, self).delete_from_db()
+        super(ForumModel, self).delete_from_db()
 
     @classmethod
     def find_collection(cls, user_email=None, title=None, id=None) -> dict:
