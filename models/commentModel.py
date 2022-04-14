@@ -52,7 +52,7 @@ class CommentModel(DocumentModel):
     @classmethod
     def delete_by_game_id(cls, game_id):
         # pero una cosa debe borrar todos los comments
-        comments = cls.find_by_column(game_id, 'publication_id')
+        comments = cls.find_by_column(game_id, 'game_id')
         for comment_id, comment in comments.items():
             comment.delete_from_db()
         return comments
