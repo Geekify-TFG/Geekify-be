@@ -3,6 +3,7 @@ from decouple import config as config_decouple
 from flask import Flask
 from flask_restful import Api
 
+from models.forumModel import ForumModel
 from resources.collections import Collections, CollectionsList, CollectionGame
 from config import config
 from flask_cors import CORS
@@ -16,6 +17,7 @@ from models.commentModel import CommentModel
 # resources imports
 from resources.account import Accounts, AccountLike
 from resources.comments import CommentsList, Comments
+from resources.forums import Forum, ForumsList
 from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList
 from resources.news import News
@@ -34,6 +36,7 @@ db.get_instance().init_app(app)
 AccountModel.collection = db.get_database.accounts
 CollectionModel.collection = db.get_database.collections
 CommentModel.collection = db.get_database.comments
+ForumModel.collection = db.get_database.forums
 
 CONNECTION_STRING = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test?retryWrites=true&w=majority"
 mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertificates=True)
@@ -63,5 +66,9 @@ api.add_resource(CollectionGame, '/collectionGame/<string:id>')
 
 # News
 api.add_resource(News, '/news')
+
+# Forums
+api.add_resource(Forum, '/forum', '/forum/<string:id>')
+api.add_resource(ForumsList, '/forums')
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

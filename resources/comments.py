@@ -101,6 +101,7 @@ class CommentsList(Resource):
         with lock.lock:
             try:
                 ret = CommentModel.get_all()
+                print(ret)
                 if len(ret) == 0:
                     return {'comments': {}}, 204
                 return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
