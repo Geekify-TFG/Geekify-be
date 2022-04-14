@@ -62,7 +62,7 @@ class CollectionModel(DocumentModel):
         else:
             columns['{0}'.format(self.title_col_name)] = str(title)
             columns['{0}'.format(self.image_col_name)] = image
-            columns['{0}'.format(self.num_games_col_name)] = len(self.games_col_name)
+            columns['{0}'.format(self.num_games_col_name)] = num_games
             columns['{0}'.format(self.games_col_name)] = games
             columns['{0}'.format(self.user_email_col_name)] = user_email
             self.set_doc_ref(columns.copy())
@@ -106,10 +106,9 @@ class CollectionModel(DocumentModel):
             if image:
                 self.__update_column__(self.image_col_name, str(image))
             if num_games:
-                self.__update_column__(self.num_games_col_name, num_games)
+                self.__update_column__(self.num_games_col_name, games)
             if games:
                 self.__update_column__(self.games_col_name, games)
-                self.__update_column__(self.num_games_col_name, len(games))
 
             if user_email:
                 self.__update_column__(self.user_email_col_name, user_email)
