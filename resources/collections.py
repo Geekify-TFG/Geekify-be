@@ -157,5 +157,4 @@ class CollectionGame(Resource):
             game_detail = requests.get(api_detail).json()
             collection = CollectionModel.find_collection(id=id)
             collection.update_tags(game_detail)
-            # print(collection.json()['value']['games'])
         return {'message': 'Collection updated successfully'}, 201
