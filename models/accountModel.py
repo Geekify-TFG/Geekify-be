@@ -17,7 +17,6 @@ auth = HTTPBasicAuth()
     account (email, password(encrypted), name, ...)
 '''
 
-
 Photo = [
     "https://i.picsum.photos/id/473/200/200.jpg?hmac=lXsJQxtsh73ygSCMmcWA-YqIpQ4FjdxUYkkuLTAPBfM",
     "https://i.picsum.photos/id/305/200/200.jpg?hmac=GAm9fW477iVRZTOeQCdEqLVug4lTf8wnHHzLof8RbFQ",
@@ -34,7 +33,7 @@ class AccountModel(DocumentModel):
     mongodb - collection called accounts
     """
     __column_names__ = ['email', 'password', 'name',
-                        'initial_date', 'photo', 'is_admin', 'likes']
+                        'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -44,6 +43,7 @@ class AccountModel(DocumentModel):
     photo_col_name = __column_names__[4]
     admin_col_name = __column_names__[5]
     likes_col_name = __column_names__[6]
+    forums_followed_col_name = __column_names__[7]
 
     __password_hashed__ = False
 
@@ -55,7 +55,8 @@ class AccountModel(DocumentModel):
             photo=(random.choice(Photo)),
             doc=None,
             is_admin=0,
-            likes=[]
+            likes=[],
+            forums_followed=None
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -78,6 +79,7 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.initial_date_col_name)] = date.today().strftime("%d/%m/%Y")
             columns['{0}'.format(self.admin_col_name)] = int(is_admin)
             columns['{0}'.format(self.likes_col_name)] = likes
+            columns['{0}'.format(self.forums_followed_col_name)] = forums_followed
             self.set_doc_ref(columns.copy())
 
     # Create new document -- private method
@@ -113,7 +115,7 @@ class AccountModel(DocumentModel):
 
     def update_document(
             self, password=None, email=None, name=None,
-            photo=None, is_admin=None, likes=None
+            photo=None, is_admin=None, likes=None, forums_followed=None
 
     ):
         # if it's already exists then update
@@ -133,6 +135,8 @@ class AccountModel(DocumentModel):
 
             if likes:
                 self.__update_column__(self.likes_col_name, likes)
+            if forums_followed:
+                self.__update_column__(self.forums_followed_col_name, forums_followed)
             self.collection.find_one_and_update(
                 {'_id': self.id},
                 {
@@ -148,7 +152,9 @@ class AccountModel(DocumentModel):
             email=None,
             name=None,
             photo=None,
-            is_admin=None
+            is_admin=None,
+            likes=None,
+            forums_followed=None
     ):
         account = cls.find_by_id(id)
         if account.exists:
@@ -157,7 +163,9 @@ class AccountModel(DocumentModel):
                 email=email,
                 name=name,
                 photo=photo,
-                is_admin=is_admin
+                is_admin=is_admin,
+                likes=likes,
+                forums_followed=forums_followed
             )
 
     def delete_from_db(self):
@@ -177,6 +185,9 @@ class AccountModel(DocumentModel):
     def get_likes(self):
         return self.get_column(col_name='likes', col_type=list)
 
+    def get_forums_followed(self):
+        return self.get_column(col_name=self.forums_followed_col_name, col_type=list)
+
     def add_or_remove_like(self, game, rate):
         my_likes = self.get_likes()
         my_likes.append({'game_id': game, 'rating': rate})
@@ -194,6 +205,15 @@ class AccountModel(DocumentModel):
         my_likes.remove({"key": game})
 
         self.update_document(likes=my_likes)
+
+    def add_or_remove_forum_followed(self, forum):
+        if forum:
+            forums_followed = self.get_forums_followed()
+            if forum in forums_followed:
+                forums_followed.remove(u'{0}'.format(forum))
+            else:
+                forums_followed.append(u'{}'.format(forum))
+            self.update_document(forums_followed=forums_followed)
 
     @classmethod
     def find_account(cls, email=None, id=None):

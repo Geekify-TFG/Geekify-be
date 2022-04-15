@@ -92,8 +92,8 @@ class AccountLike(Resource):
                 user = data['user']
                 if user:
                     accounts = AccountModel.find_account(email=user)
-                    #accounts.add_or_remove_like(id,rate)
-                    accounts.add_or_remove_like(id,rate)
+                    # accounts.add_or_remove_like(id,rate)
+                    accounts.add_or_remove_like(id, rate)
                 return {'message': 'Liked added successfully'}, 201
 
     def put(self, id=None):
@@ -109,11 +109,47 @@ class AccountLike(Resource):
                 user = data['user']
                 if user:
                     accounts = AccountModel.find_account(email=user)
-                    #accounts.add_or_remove_like(id,rate)
-                    accounts.update_rate(id,rate)
+                    # accounts.add_or_remove_like(id,rate)
+                    accounts.update_rate(id, rate)
                 return {'message': 'Liked added successfully'}, 201
 
 
+class AccountForums(Resource):
 
+    # @auth.login_required(role=['user', 'admin'])
+    def get(self, email=None):
+        with lock.lock:
+            try:
+                account = AccountModel.find_account(email=email)
+                forums_followed = account.get_forums_followed()
+                return {'forums_followed': forums_followed}, 200
+            except Exception as e:
+                return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
 
+    # @auth.login_required(role=['user', 'admin'])
+    def post(self, email=None):
+        with lock.lock:
+            email_name = AccountModel.email_col_name
+            forums_followed = AccountModel.forums_followed_col_name
+            parser = reqparse.RequestParser()
+            parser.add_argument(email_name, type=str, required=False, help='This field cannot be left blank')
+            parser.add_argument(forums_followed, type=str, required=True, help='This field cannot be left blank')
+            data = parser.parse_args()
+            if data:
+                try:
+                    eml = data[email_name] if data[email_name] else None
+                    new_forum = data[forums_followed] if data[forums_followed] else None
 
+                    if new_forum:
+                        try:
+                            accounts = AccountModel.find_account(email=email)
+                            accounts.add_or_remove_forum_followed(forum=new_forum)
+                            return {"account": "Updated"}, 201
+                        except Exception as e:
+                            return {'message': 'Error {0}: {1}'.format(type(e), e)}, 404
+                    else:
+                        raise Exception('Error. No Author Email were specified!')
+
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 404
