@@ -19,7 +19,8 @@ from resources.account import Accounts, AccountLike
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
-from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList
+from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
+    ListMostPopularGames
 from resources.news import News
 
 app = Flask(__name__)
@@ -54,6 +55,7 @@ api.add_resource(GamesByTitle, '/games/title/<string:title>')
 api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
 api.add_resource(GameCommentsList, '/gameComments/<string:id>')
+api.add_resource(ListMostPopularGames, '/listGames/<string:id>','/listGames')
 
 # Comments
 api.add_resource(CommentsList, '/comments')

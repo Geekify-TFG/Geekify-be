@@ -76,11 +76,11 @@ class Forum(Resource):
         with lock.lock:
             try:
                 if id:
-                    collection = ForumModel.find_by_id(id)
+                    forum = ForumModel.find_by_id(id)
 
                     try:
-                        collection.delete_from_db()
-                        return {'message': 'Collection deleted successfully'}, 200
+                        forum.delete_from_db()
+                        return {'message': 'Forum deleted successfully'}, 200
                     except Exception as e:
                         return {
                                    'message': 'An error occurred while finding the content of forum. '

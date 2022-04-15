@@ -149,3 +149,19 @@ class GameCommentsList(Resource):
                 return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
             except Exception as e:
                 return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+
+
+class ListMostPopularGames(Resource):
+
+    def get(self, id=4):
+        try:
+            list_games = []
+            for i in range(1, int(id)):
+                api_rawg = "https://api.rawg.io/api/games?page={0}&key=".format(i) + API_KEY
+                games = requests.get(api_rawg)
+                my_json = games.json().get("results")
+                for index in range(len(my_json)):
+                    list_games.append({'id': my_json[index]['id'], 'name': my_json[index]['name']})
+            return {'games': list_games}, 200
+        except Exception as e:
+            return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
