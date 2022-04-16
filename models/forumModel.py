@@ -56,6 +56,8 @@ class ForumModel(DocumentModel):
         super(ForumModel, self).__init__(doc)
         if users is None:
             users = []
+        if posts is None:
+            posts = []
         columns = dict.fromkeys(self.__column_names__)
         if doc:
             dic = dict.fromkeys(self.__column_names__)
@@ -145,6 +147,9 @@ class ForumModel(DocumentModel):
     def get_num_users(self):
         return self.get_column(col_name=self.num_users_col_name, col_type=list)
 
+    def get_posts_forum(self):
+        return self.get_column(col_name=self.posts_col_name, col_type=list)
+
     def add_or_remove_user_followed(self, user):
         if user:
             users = self.get_users_forum()
@@ -155,9 +160,16 @@ class ForumModel(DocumentModel):
             else:
                 users.append(u'{}'.format(user))
                 num_users = num_users + 1
-
-
             self.update_document(users=users, num_users=num_users)
+
+    def add_or_remove_publication(self, publication):
+        if publication:
+            posts = self.get_posts_forum()
+            if publication in posts:
+                posts.remove(publication)
+            else:
+                posts.append(publication)
+            self.update_document(posts=posts)
 
     @classmethod
     def update_by_id(

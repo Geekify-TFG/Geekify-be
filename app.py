@@ -4,6 +4,7 @@ from flask import Flask
 from flask_restful import Api
 
 from models.forumModel import ForumModel
+from models.publicationModel import PublicationModel
 from resources.collections import Collections, CollectionsList, CollectionGame
 from config import config
 from flask_cors import CORS
@@ -22,6 +23,7 @@ from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
     ListMostPopularGames
 from resources.news import News
+from resources.publications import ForumPublications, Publications
 
 app = Flask(__name__)
 environment = config['development']
@@ -38,6 +40,7 @@ AccountModel.collection = db.get_database.accounts
 CollectionModel.collection = db.get_database.collections
 CommentModel.collection = db.get_database.comments
 ForumModel.collection = db.get_database.forums
+PublicationModel.collection = db.get_database.publications
 
 CONNECTION_STRING = "mongodb+srv://jromero:050899@geekify.q6113.mongodb.net/test?retryWrites=true&w=majority"
 mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertificates=True)
@@ -73,5 +76,7 @@ api.add_resource(News, '/news')
 # Forums
 api.add_resource(Forum, '/forum', '/forum/<string:id>')
 api.add_resource(ForumsList, '/forums')
+api.add_resource(ForumPublications, '/forum/<string:id>/publications')
+api.add_resource(Publications, '/forum/<string:id>/publication','/publication/<string:id>')
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
