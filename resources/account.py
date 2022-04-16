@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse
 from lock import lock
 from models.accountModel import AccountModel, auth, g
 from models.collectionModel import CollectionModel
+from models.forumModel import ForumModel
 
 
 class AccountsInfo(Resource):
@@ -143,6 +144,8 @@ class AccountForums(Resource):
                     if new_forum:
                         try:
                             accounts = AccountModel.find_account(email=email)
+                            forum = ForumModel.find_forum(id=new_forum)
+                            forum.add_or_remove_user_followed(user=email)
                             accounts.add_or_remove_forum_followed(forum=new_forum)
                             return {"account": "Updated"}, 201
                         except Exception as e:

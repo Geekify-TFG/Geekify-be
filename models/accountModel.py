@@ -132,7 +132,6 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.photo_col_name, str(photo))
             if is_admin:
                 self.__update_column__(self.admin_col_name, int(is_admin))
-
             if likes:
                 self.__update_column__(self.likes_col_name, likes)
             if forums_followed:

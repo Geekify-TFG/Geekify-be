@@ -20,6 +20,7 @@ Photo = [
     "https://i.picsum.photos/id/504/200/200.jpg?hmac=uNktbiKQMUD0MuwgQUxt7R2zjHBGFxyUSG3prhX0FWM",
 ]
 
+
 class ForumModel(DocumentModel):
     """
    class representing account model.
@@ -138,11 +139,32 @@ class ForumModel(DocumentModel):
                 }
             )
 
+    def get_users_forum(self):
+        return self.get_column(col_name=self.users_col_name, col_type=list)
+
+    def get_num_users(self):
+        return self.get_column(col_name=self.num_users_col_name, col_type=list)
+
+    def add_or_remove_user_followed(self, user):
+        if user:
+            users = self.get_users_forum()
+            num_users = self.get_num_users()
+            if user in users:
+                users.remove(u'{0}'.format(user))
+                num_users = num_users - 1
+            else:
+                users.append(u'{}'.format(user))
+                num_users = num_users + 1
+
+
+            self.update_document(users=users, num_users=num_users)
+
     @classmethod
     def update_by_id(
             cls,
             id,
-            title=None, description=None, image=None, tag=None, game=None, users=None, num_users=None, admin=None,posts=None
+            title=None, description=None, image=None, tag=None, game=None, users=None, num_users=None, admin=None,
+            posts=None
     ):
         collection = cls.find_by_id(id)
         if collection.exists:

@@ -8,7 +8,7 @@ from models.forumModel import ForumModel
 
 
 class Forum(Resource):
-    @auth.login_required(role=['user', 'admin'])
+    #@auth.login_required(role=['user', 'admin'])
     def get(self, id=None):
         with lock.lock:
             try:
