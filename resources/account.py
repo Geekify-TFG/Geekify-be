@@ -126,7 +126,12 @@ class AccountForums(Resource):
                 forums_followeds = []
                 for i in forums_followed:
                     a = ForumModel.find_forum(id=i)
-                    forums_followeds.append(a.json())
+                    print(a.json().get('id') != 'None')
+                    if a.json().get('id') != 'None':
+                        forums_followeds.append(a.json())
+                    else:
+                        account.remove_forum_followed(forum=i)
+
                 return {'forums_followed': forums_followeds}, 200
             except Exception as e:
                 return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
@@ -151,7 +156,7 @@ class AccountForums(Resource):
                             forum = ForumModel.find_forum(id=new_forum)
                             forum.add_or_remove_user_followed(user=email)
                             accounts.add_or_remove_forum_followed(forum=new_forum)
-                            return {"account": "Updated"}, 201
+                            return {"account": accounts.json()}, 201
                         except Exception as e:
                             return {'message': 'Error {0}: {1}'.format(type(e), e)}, 404
                     else:

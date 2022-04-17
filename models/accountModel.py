@@ -213,6 +213,11 @@ class AccountModel(DocumentModel):
                 forums_followed.append(u'{}'.format(forum))
             self.update_document(forums_followed=forums_followed)
 
+    def remove_forum_followed(self, forum):
+        forums_followed = self.get_forums_followed()
+
+        forums_followed.remove(u'{0}'.format(forum))
+
     @classmethod
     def find_account(cls, email=None, id=None):
         try:

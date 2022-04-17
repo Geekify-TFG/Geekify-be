@@ -33,7 +33,7 @@ class Publications(Resource):
             except Exception as e:
                 return {'message': 'Internal server error. Error {}:{}'.format(type(e), e)}, 500
 
-    #@auth.login_required(role=['user', 'admin'])
+    # @auth.login_required(role=['user', 'admin'])
     def post(self, id=None):
         with lock.lock:
             parser = reqparse.RequestParser()
@@ -41,7 +41,7 @@ class Publications(Resource):
             parser.add_argument('date', type=str, required=True, help="This field cannot be left blank.")
             parser.add_argument('content', type=str, required=True, help="This field cannot be left blank.")
             parser.add_argument('user', type=str, required=True, help="This field cannot be left blank.")
-            #parser.add_argument('forum_id', type=str, required=True, help="This field cannot be left blank.")
+            # parser.add_argument('forum_id', type=str, required=True, help="This field cannot be left blank.")
 
             data = parser.parse_args()
             if data:
@@ -49,7 +49,6 @@ class Publications(Resource):
                 content = data['content']
                 user = data['user']
                 forum_id = id
-
                 if user:
                     accounts = AccountModel.find_account(email=user)
                     username = accounts.json().get('value').get('name')
@@ -109,7 +108,6 @@ class ForumPublications(Resource):
                 return {'publications': {key: ret[key].json()[key] for key in ret.keys()}}, 202
             except Exception as e:
                 return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
-
 
 
 class ForumPublicationLike(Resource):
