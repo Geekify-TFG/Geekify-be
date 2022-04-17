@@ -23,7 +23,7 @@ from resources.login import LogIn
 from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
     ListMostPopularGames
 from resources.news import News
-from resources.publications import ForumPublications, Publications
+from resources.publications import ForumPublications, Publications, ForumPublicationLike
 
 app = Flask(__name__)
 environment = config['development']
@@ -59,7 +59,7 @@ api.add_resource(GamesByTitle, '/games/title/<string:title>')
 api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
 api.add_resource(GameCommentsList, '/gameComments/<string:id>')
-api.add_resource(ListMostPopularGames, '/listGames/<string:id>','/listGames')
+api.add_resource(ListMostPopularGames, '/listGames/<string:id>', '/listGames')
 
 # Comments
 api.add_resource(CommentsList, '/comments')
@@ -76,7 +76,10 @@ api.add_resource(News, '/news')
 # Forums
 api.add_resource(Forum, '/forum', '/forum/<string:id>')
 api.add_resource(ForumsList, '/forums')
+
+# Publications
 api.add_resource(ForumPublications, '/forum/<string:id>/publications')
-api.add_resource(Publications, '/forum/<string:id>/publication','/publication/<string:id>')
+api.add_resource(Publications, '/forum/<string:id>/publication', '/publication/<string:id>')
+api.add_resource(ForumPublicationLike, '/publicationLike/<string:id>',)
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

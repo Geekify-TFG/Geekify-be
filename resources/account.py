@@ -123,7 +123,11 @@ class AccountForums(Resource):
             try:
                 account = AccountModel.find_account(email=email)
                 forums_followed = account.get_forums_followed()
-                return {'forums_followed': forums_followed}, 200
+                forums_followeds = []
+                for i in forums_followed:
+                    a = ForumModel.find_forum(id=i)
+                    forums_followeds.append(a.json())
+                return {'forums_followed': forums_followeds}, 200
             except Exception as e:
                 return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
 

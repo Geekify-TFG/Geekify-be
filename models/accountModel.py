@@ -200,7 +200,6 @@ class AccountModel(DocumentModel):
 
     def remove_like(self, game):
         my_likes = self.get_likes()
-        print(my_likes)
         my_likes.remove({"key": game})
 
         self.update_document(likes=my_likes)
