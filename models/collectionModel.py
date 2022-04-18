@@ -1,4 +1,4 @@
-
+import random
 from flask_httpauth import HTTPBasicAuth
 
 from models.abstract.model_definition import DocumentModel
@@ -10,6 +10,15 @@ auth = HTTPBasicAuth()
     all attribute are defined here and is a must have value
     account (email, password(encrypted), name, ...)
 '''
+
+Photo = [
+    "https://i.picsum.photos/id/473/200/200.jpg?hmac=lXsJQxtsh73ygSCMmcWA-YqIpQ4FjdxUYkkuLTAPBfM",
+    "https://i.picsum.photos/id/305/200/200.jpg?hmac=GAm9fW477iVRZTOeQCdEqLVug4lTf8wnHHzLof8RbFQ",
+    "https://i.picsum.photos/id/400/200/200.jpg?hmac=YLB07yPNCdu_zyt5Mr1eLqUtqY7nPOmnJBvJea4s7Uc",
+    "https://i.picsum.photos/id/955/200/200.jpg?hmac=_m3ln1pswsR9s9hWuWrwY_O6N4wizKmukfhvyaTrkjE",
+    "https://i.picsum.photos/id/1066/200/200.jpg?hmac=BHYYzH0KERL1WifyefL6hVVg0wURJUgTaByr75WmJug",
+    "https://i.picsum.photos/id/504/200/200.jpg?hmac=uNktbiKQMUD0MuwgQUxt7R2zjHBGFxyUSG3prhX0FWM",
+]
 
 
 class CollectionModel(DocumentModel):
@@ -30,7 +39,7 @@ class CollectionModel(DocumentModel):
     def __init__(
             self,
             title=None,
-            image='https://source.unsplash.com/random',
+            image=(random.choice(Photo)),
             num_games=0,
             games=None,
             user_email=None,
@@ -53,7 +62,7 @@ class CollectionModel(DocumentModel):
         else:
             columns['{0}'.format(self.title_col_name)] = str(title)
             columns['{0}'.format(self.image_col_name)] = image
-            columns['{0}'.format(self.num_games_col_name)] = str(num_games)
+            columns['{0}'.format(self.num_games_col_name)] = num_games
             columns['{0}'.format(self.games_col_name)] = games
             columns['{0}'.format(self.user_email_col_name)] = user_email
             self.set_doc_ref(columns.copy())
@@ -100,6 +109,7 @@ class CollectionModel(DocumentModel):
                 self.__update_column__(self.num_games_col_name, games)
             if games:
                 self.__update_column__(self.games_col_name, games)
+
             if user_email:
                 self.__update_column__(self.user_email_col_name, user_email)
             self.collection.find_one_and_update(
@@ -140,6 +150,11 @@ class CollectionModel(DocumentModel):
             }
         )
 
+    def increment_len(self):
+        games = self.get_column(col_name='games', col_type=list)
+        print(len(games))
+        num_games = len(games) + 1
+        self.update_document(num_games=num_games)
 
     @classmethod
     def find_by_useremail(cls, user_email) -> dict:

@@ -22,10 +22,10 @@ class Collections(Resource):
                             return {'collection': my_json}, 200
                         except Exception as e:
                             return {
-                                       'message': 'An error occurred while finding the content of publication. '
+                                       'message': 'An error occurred while finding the content of collection. '
                                                   'Error {0}:{1}'.format(type(e), e)
                                    }, 404
-                    return {'message': 'Publication does not exists'}, 404
+                    return {'message': 'Collection does not exists'}, 404
                 return {'message': 'No id were provided!'}, 400
             except Exception as e:
                 return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
@@ -76,7 +76,7 @@ class Collections(Resource):
                         return {'message': 'Collection deleted successfully'}, 200
                     except Exception as e:
                         return {
-                                   'message': 'An error occurred while finding the content of publication. '
+                                   'message': 'An error occurred while finding the content of collection. '
                                               'Error {0}:{1}'.format(type(e), e)
                                }, 404
             except Exception as e:
@@ -157,4 +157,5 @@ class CollectionGame(Resource):
             game_detail = requests.get(api_detail).json()
             collection = CollectionModel.find_collection(id=id)
             collection.update_tags(game_detail)
+            #collection.increment_len()
         return {'message': 'Collection updated successfully'}, 201
