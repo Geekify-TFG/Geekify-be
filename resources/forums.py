@@ -8,7 +8,7 @@ from models.forumModel import ForumModel
 
 
 class Forum(Resource):
-    #@auth.login_required(role=['user', 'admin'])
+    # @auth.login_required(role=['user', 'admin'])
     def get(self, id=None):
         with lock.lock:
             try:
@@ -28,7 +28,7 @@ class Forum(Resource):
             except Exception as e:
                 return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
 
-    #@auth.login_required(role=['user', 'admin'])
+    # @auth.login_required(role=['user', 'admin'])
     def post(self, title=None, id=None):
         with lock.lock:
             parser = reqparse.RequestParser()
@@ -72,6 +72,31 @@ class Forum(Resource):
                     return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
             return {'message': 'An error occurred parsing arguments.'}, 400
 
+    def put(self, title=None, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+            parser.add_argument(ForumModel.title_col_name, type=str, required=True)
+            parser.add_argument(ForumModel.description_col_name, type=str, required=True)
+            parser.add_argument(ForumModel.image_col_name, type=str, required=False)
+            parser.add_argument(ForumModel.tag_col_name, type=str, required=True)
+            parser.add_argument(ForumModel.game_col_name, type=str, required=True)
+            parser.add_argument(ForumModel.admin_col_name, type=str, required=True)
+            data = parser.parse_args()
+            if data:
+                try:
+
+                    try:
+                        # id is specified
+                        ForumModel.update_by_id(id, **data)
+                        return {"forum": "Updated"}, 201
+                    except Exception as e:
+                        return {
+                                   'message': 'An error occurred creating the forum. {0}:{1}'.format(type(e), e)
+                               }, 500
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 400
+
     def delete(self, id=None):
         with lock.lock:
             try:
@@ -90,8 +115,6 @@ class Forum(Resource):
                 return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
 
 
-
-
 class ForumsList(Resource):
     def get(self):
         with lock.lock:
@@ -102,5 +125,3 @@ class ForumsList(Resource):
                 return {'forums': {key: ret[key].json()['value'] for key in ret.keys()}}, 202
             except Exception as e:
                 return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
-
-
