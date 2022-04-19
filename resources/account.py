@@ -1,9 +1,13 @@
 from flask_restful import Resource, reqparse
+import requests
 
 from lock import lock
 from models.accountModel import AccountModel, auth, g
 from models.collectionModel import CollectionModel
 from models.forumModel import ForumModel
+
+from models.commentModel import CommentModel
+API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 
 
 class AccountsInfo(Resource):
@@ -126,7 +130,6 @@ class AccountForums(Resource):
                 forums_followeds = []
                 for i in forums_followed:
                     a = ForumModel.find_forum(id=i)
-                    print(a.json().get('id') != 'None')
                     if a.json().get('id') != 'None':
                         forums_followeds.append(a.json())
                     else:
@@ -165,3 +168,42 @@ class AccountForums(Resource):
                 except Exception as e:
                     return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
             return {'message': 'An error occurred parsing arguments.'}, 404
+
+
+class AccountInfo(Resource):
+    def get(self, email=None):
+        with lock.lock:
+
+            try:
+                account = AccountModel.find_account(email=email)
+                if account.exists:
+                    my_json = account.json()
+                    email = my_json['value']['email']
+                    photo = my_json['value']['photo']
+                    user = email.split('@')[0]
+                    # Know game of the comment
+                    comment = CommentModel.find_by_user(user)
+                    b = comment.json()
+                    game_id = list(b.values())[0].get('game_id')
+                    api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                    game_detail = requests.get(api_detail).json()
+                    list(b.values())[0]['game_comment'] = game_detail
+                    my_json.get('value')['comment'] = b
+                    # Know collections
+                    ret = CollectionModel.find_by_useremail(user_email=email)
+                    a = ([ret[key].json() for key in ret.keys()])
+                    my_json.get('value')['collections'] = a
+                    
+                    top_games = my_json.get('value')['top_games']
+                    all_games = []
+                    for i in top_games:
+                        game =  requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
+                        all_games.append(game)
+
+                    my_json.get('value')['all_games'] = all_games
+
+                    return {'account': my_json}, 200
+                else:
+                    return {'account': {}}, 404  # not found
+            except Exception as e:
+                return {'message': 'Account with email [{0}] doesn\'t exists'.format(email)}, 404

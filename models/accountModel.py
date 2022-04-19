@@ -33,7 +33,8 @@ class AccountModel(DocumentModel):
     mongodb - collection called accounts
     """
     __column_names__ = ['email', 'password', 'name',
-                        'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed']
+                        'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed', 'gender', 'birthday',
+                        'location', 'fav_categories', 'top_games']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -44,6 +45,11 @@ class AccountModel(DocumentModel):
     admin_col_name = __column_names__[5]
     likes_col_name = __column_names__[6]
     forums_followed_col_name = __column_names__[7]
+    gender_col_name = __column_names__[8]
+    birthday_col_name = __column_names__[9]
+    location_col_name = __column_names__[10]
+    fav_categories_col_name = __column_names__[11]
+    top_games_col_name = __column_names__[10]
 
     __password_hashed__ = False
 
@@ -56,7 +62,12 @@ class AccountModel(DocumentModel):
             doc=None,
             is_admin=0,
             likes=[],
-            forums_followed=None
+            forums_followed=None,
+            gender=None,
+            birthday=None,
+            location=None,
+            fav_categories=None,
+            top_games=None,
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -80,6 +91,12 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.admin_col_name)] = int(is_admin)
             columns['{0}'.format(self.likes_col_name)] = likes
             columns['{0}'.format(self.forums_followed_col_name)] = forums_followed
+            columns['{0}'.format(self.gender_col_name)] = gender
+            columns['{0}'.format(self.birthday_col_name)] = birthday
+            columns['{0}'.format(self.location_col_name)] = location
+            columns['{0}'.format(self.fav_categories_col_name)] = fav_categories
+            columns['{0}'.format(self.top_games_col_name)] = top_games
+
             self.set_doc_ref(columns.copy())
 
     # Create new document -- private method
@@ -114,9 +131,8 @@ class AccountModel(DocumentModel):
         return self.__create()
 
     def update_document(
-            self, password=None, email=None, name=None,
-            photo=None, is_admin=None, likes=None, forums_followed=None
-
+            self, password=None, email=None, name=None, photo=None, is_admin=None, likes=None, forums_followed=None,
+            gender=None, birthday=None, location=None, fav_categories=None, top_games=None,
     ):
         # if it's already exists then update
         if self.exists:
@@ -124,7 +140,6 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.email_col_name, str(email))
             if password:
                 self.__hash_password__(str(password))
-
             if name:
                 self.__update_column__(self.name_col_name, str(name))
 
@@ -136,6 +151,17 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.likes_col_name, likes)
             if forums_followed:
                 self.__update_column__(self.forums_followed_col_name, forums_followed)
+            if gender:
+                self.__update_column__(self.gender_col_name, gender)
+            if gender:
+                self.__update_column__(self.birthday_col_name, birthday)
+            if location:
+                self.__update_column__(self.location_col_name, location)
+            if fav_categories:
+                self.__update_column__(self.fav_categories_col_name, fav_categories)
+            if top_games:
+                self.__update_column__(self.top_games_col_name, top_games)
+
             self.collection.find_one_and_update(
                 {'_id': self.id},
                 {
@@ -153,7 +179,12 @@ class AccountModel(DocumentModel):
             photo=None,
             is_admin=None,
             likes=None,
-            forums_followed=None
+            forums_followed=None,
+            gender=None,
+            birthday=None,
+            location=None,
+            fav_categories=None,
+            top_games=None,
     ):
         account = cls.find_by_id(id)
         if account.exists:
@@ -164,7 +195,12 @@ class AccountModel(DocumentModel):
                 photo=photo,
                 is_admin=is_admin,
                 likes=likes,
-                forums_followed=forums_followed
+                forums_followed=forums_followed,
+                gender=gender,
+                birthday=birthday,
+                location=location,
+                fav_categories=fav_categories,
+                top_games=top_games
             )
 
     def delete_from_db(self):
