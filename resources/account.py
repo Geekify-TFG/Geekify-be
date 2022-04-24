@@ -7,6 +7,7 @@ from models.collectionModel import CollectionModel
 from models.forumModel import ForumModel
 
 from models.commentModel import CommentModel
+
 API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 
 
@@ -130,10 +131,10 @@ class AccountForums(Resource):
                 forums_followeds = []
                 for i in forums_followed:
                     a = ForumModel.find_forum(id=i)
-                    if a.json().get('id') != 'None':
-                        forums_followeds.append(a.json())
-                    else:
-                        account.remove_forum_followed(forum=i)
+                    # if a.json().get('id') != 'None':
+                    forums_followeds.append(a.json())
+                    # else:
+                    #   account.remove_forum_followed(forum=i)
 
                 return {'forums_followed': forums_followeds}, 200
             except Exception as e:
@@ -176,6 +177,7 @@ class AccountInfo(Resource):
 
             try:
                 account = AccountModel.find_account(email=email)
+                print(account.json())
                 if account.exists:
                     my_json = account.json()
                     email = my_json['value']['email']
@@ -193,11 +195,11 @@ class AccountInfo(Resource):
                     ret = CollectionModel.find_by_useremail(user_email=email)
                     a = ([ret[key].json() for key in ret.keys()])
                     my_json.get('value')['collections'] = a
-                    
+
                     top_games = my_json.get('value')['top_games']
                     all_games = []
                     for i in top_games:
-                        game =  requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
+                        game = requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
                         all_games.append(game)
 
                     my_json.get('value')['all_games'] = all_games

@@ -24,7 +24,7 @@ from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameF
     ListMostPopularGames
 from resources.news import News
 from resources.publications import ForumPublications, Publications, ForumPublicationLike
-
+from resources.calendar import Calendar
 app = Flask(__name__)
 environment = config['development']
 if config_decouple('PRODUCTION', cast=bool, default=False):
@@ -82,5 +82,9 @@ api.add_resource(ForumsList, '/forums')
 api.add_resource(ForumPublications, '/forum/<string:id>/publications')
 api.add_resource(Publications, '/forum/<string:id>/publication', '/publication/<string:id>')
 api.add_resource(ForumPublicationLike, '/publicationLike/<string:id>',)
+
+# Calendar
+api.add_resource(Calendar, '/calendar')
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
