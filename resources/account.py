@@ -209,3 +209,43 @@ class AccountInfo(Resource):
                     return {'account': {}}, 404  # not found
             except Exception as e:
                 return {'message': 'Account with email [{0}] doesn\'t exists'.format(email)}, 404
+
+
+class AccountCalendar(Resource):
+
+    # @auth.login_required(role=['user', 'admin'])
+    def get(self, email=None):
+        with lock.lock:
+            try:
+                account = AccountModel.find_account(email=email)
+                calendar_releases = account.get_calendar_releases()
+
+                return {'calendar_releases': calendar_releases}, 200
+            except Exception as e:
+                return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+
+    # @auth.login_required(role=['user', 'admin'])
+    def post(self, email=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+            parser.add_argument('game_id', type=str, required=False, help='This field cannot be left blank')
+            parser.add_argument('game_title', type=str, required=True, help='This field cannot be left blank')
+            parser.add_argument('game_image', type=str, required=True, help='This field cannot be left blank')
+            parser.add_argument('game_date', type=str, required=True, help='This field cannot be left blank')
+            data = parser.parse_args()
+            if data:
+                game_id = int(data['game_id'])
+                game_title = data['game_title']
+                game_image = data['game_image']
+                game_date = data['game_date']
+
+                try:
+                    accounts = AccountModel.find_account(email=email)
+                    accounts.add_or_remove_calendar_releases(game_id=game_id, game_title=game_title,
+                                                             game_image=game_image, game_date=game_date)
+                    calendar_releases = accounts.get_calendar_releases()
+                    return {"account": calendar_releases}, 201
+
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 404

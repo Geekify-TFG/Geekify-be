@@ -16,7 +16,7 @@ from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
 
 # resources imports
-from resources.account import Accounts, AccountLike, AccountForums, AccountInfo
+from resources.account import Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
@@ -52,6 +52,7 @@ api.add_resource(LogIn, '/login')
 api.add_resource(AccountLike, '/account/like/<string:id>')
 api.add_resource(AccountForums, '/account/forums/<string:email>')
 api.add_resource(AccountInfo, '/account/info/<string:email>')
+api.add_resource(AccountCalendar, '/account/calendar/<string:email>')
 
 # Games
 api.add_resource(Games, '/games')
