@@ -174,41 +174,76 @@ class AccountForums(Resource):
 class AccountInfo(Resource):
     def get(self, email=None):
         with lock.lock:
-
             try:
                 account = AccountModel.find_account(email=email)
-                print(account.json())
                 if account.exists:
                     my_json = account.json()
                     email = my_json['value']['email']
                     photo = my_json['value']['photo']
                     user = email.split('@')[0]
-                    # Know game of the comment
-                    comment = CommentModel.find_by_user(user)
-                    b = comment.json()
-                    game_id = list(b.values())[0].get('game_id')
-                    api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
-                    game_detail = requests.get(api_detail).json()
-                    list(b.values())[0]['game_comment'] = game_detail
-                    my_json.get('value')['comment'] = b
-                    # Know collections
-                    ret = CollectionModel.find_by_useremail(user_email=email)
-                    a = ([ret[key].json() for key in ret.keys()])
-                    my_json.get('value')['collections'] = a
+                    if (my_json['value']['gender'] != None):
+                        # Know game of the comment
+                        comment = CommentModel.find_by_user(user)
+                        b = comment.json()
+                        game_id = list(b.values())[0].get('game_id')
+                        api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                        game_detail = requests.get(api_detail).json()
+                        list(b.values())[0]['game_comment'] = game_detail
+                        my_json.get('value')['comment'] = b
+                        # Know collections
+                        ret = CollectionModel.find_by_useremail(user_email=email)
+                        a = ([ret[key].json() for key in ret.keys()])
+                        my_json.get('value')['collections'] = a
 
-                    top_games = my_json.get('value')['top_games']
-                    all_games = []
-                    for i in top_games:
-                        game = requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
-                        all_games.append(game)
+                        top_games = my_json.get('value')['top_games']
+                        all_games = []
+                        for i in top_games:
+                            game = requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
+                            all_games.append(game)
 
-                    my_json.get('value')['all_games'] = all_games
-
+                        my_json.get('value')['all_games'] = all_games
                     return {'account': my_json}, 200
                 else:
                     return {'account': {}}, 404  # not found
             except Exception as e:
                 return {'message': 'Account with email [{0}] doesn\'t exists'.format(email)}, 404
+
+    def put(self, email=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument(AccountModel.name_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.gender_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.birthday_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.location_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.fav_categories_col_name, action='append', help='<Required> Set flag',
+                                required=True)
+
+            parser.add_argument(AccountModel.top_games_col_name, action='append', help='<Required> Set flag',
+                                required=True)
+
+            data = parser.parse_args()
+            print(data)
+            if data:
+                name = data[AccountModel.name_col_name]
+                gender = data[AccountModel.gender_col_name]
+                birthday = data[AccountModel.birthday_col_name]
+                location = data[AccountModel.location_col_name]
+                fav_categories = data[AccountModel.fav_categories_col_name]
+                top_games = data[AccountModel.top_games_col_name]
+                try:
+                    account = AccountModel.find_account(email=email)
+                    if account and account.exists:
+                        # accounts.add_or_remove_like(id,rate)
+                        account.update_document(name=name, gender=gender, birthday=birthday, location=location,
+                                                fav_categories=fav_categories, top_games=top_games)
+                    return {'message': 'Account updated successfully'}, 201
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {}:{}'.format(type(e), e)}, 400
 
 
 class AccountCalendar(Resource):

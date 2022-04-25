@@ -63,13 +63,13 @@ class AccountModel(DocumentModel):
             doc=None,
             is_admin=0,
             likes=[],
-            forums_followed=None,
+            forums_followed=[],
             gender=None,
             birthday=None,
             location=None,
-            fav_categories=None,
-            top_games=None,
-            calendar_releases=None
+            fav_categories=[],
+            top_games=[],
+            calendar_releases=[]
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
