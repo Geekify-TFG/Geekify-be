@@ -184,12 +184,13 @@ class AccountInfo(Resource):
                     if (my_json['value']['gender'] != None):
                         # Know game of the comment
                         comment = CommentModel.find_by_user(user)
-                        b = comment.json()
-                        game_id = list(b.values())[0].get('game_id')
-                        api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
-                        game_detail = requests.get(api_detail).json()
-                        list(b.values())[0]['game_comment'] = game_detail
-                        my_json.get('value')['comment'] = b
+                        if comment.json() != None:
+                            b = comment.json()
+                            game_id = list(b.values())[0].get('game_id')
+                            api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                            game_detail = requests.get(api_detail).json()
+                            list(b.values())[0]['game_comment'] = game_detail
+                            my_json.get('value')['comment'] = b
                         # Know collections
                         ret = CollectionModel.find_by_useremail(user_email=email)
                         a = ([ret[key].json() for key in ret.keys()])
