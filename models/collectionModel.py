@@ -139,17 +139,6 @@ class CollectionModel(DocumentModel):
                 user_email=user_email
             )
 
-    def update_tags(self, new_tag):
-        self.collection.find_one_and_update(
-            {'_id': self.id},
-            {
-                '$push': {
-                    "games": new_tag
-                }
-
-            }
-        )
-
     def get_collection(self):
         return self.get_column(col_name=self.games_col_name, col_type=list)
 
