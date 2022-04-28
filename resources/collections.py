@@ -146,16 +146,40 @@ class CollectionsList(Resource):
 
 
 class CollectionGame(Resource):
+    def post(self, id=None):
+        with lock.lock:
+            try:
+                parser = reqparse.RequestParser()
+                parser.add_argument('game_id', type=str, required=False)
+                data = parser.parse_args()
+                game_id = data['game_id']
+                api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                game_detail = requests.get(api_detail).json()
+                collection = CollectionModel.find_collection(id=id)
+                # Get values of the dic
+                #Check if the game_id is already in the collection
+                if any(d['id'] == int(game_id) for d in collection.json()['value']['games']):
+                        return {'message': 'Game already in collection'}, 409
+                else:
+                    collection.add_game_collection( game_detail=game_detail)
+                    return {'message': 'Collection updated successfully'}, 201
+            except Exception as e:
+                return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
+
     def put(self, id=None):
         with lock.lock:
-            parser = reqparse.RequestParser()
-            parser.add_argument('game_id', type=str, required=False)
-            data = parser.parse_args()
-
-            game_id = data['game_id']
-            api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
-            game_detail = requests.get(api_detail).json()
-            collection = CollectionModel.find_collection(id=id)
-            collection.update_tags(game_detail)
-            #collection.increment_len()
-        return {'message': 'Collection updated successfully'}, 201
+            try:
+                parser = reqparse.RequestParser()
+                parser.add_argument('game_id', type=str, required=False)
+                data = parser.parse_args()
+                game_id = data['game_id']
+                api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                game_detail = requests.get(api_detail).json()
+                collection = CollectionModel.find_collection(id=id)
+                # Get values of the dic
+                #Check if the game_id is already in the collection
+                
+                collection.delete_game_collection(game_detail=game_detail)
+                return {'message': 'Game deleted successfully'}, 201
+            except Exception as e:
+                return {'message': 'Internal server error. Error {0}:{1}'.format(type(e), e)}, 500
