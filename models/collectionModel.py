@@ -150,6 +150,25 @@ class CollectionModel(DocumentModel):
             }
         )
 
+    def get_collection(self):
+        return self.get_column(col_name=self.games_col_name, col_type=list)
+
+
+    def add_game_collection(self,game_detail):
+        collection = self.get_column(col_name='games', col_type=list)
+        #Iterate over the list and check if the game is already in the list
+        print('game does not exist')
+        collection.append(game_detail)
+
+        self.update_document(games=collection)
+
+    def delete_game_collection(self,game_detail):
+        collection = self.get_column(col_name='games', col_type=list)
+        #Iterate over the list and check if the game is already in the list
+        collection.remove(game_detail)
+
+        self.update_document(games=collection)
+
     def increment_len(self):
         games = self.get_column(col_name='games', col_type=list)
         print(len(games))

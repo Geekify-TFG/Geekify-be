@@ -1,9 +1,14 @@
 from flask_restful import Resource, reqparse
+import requests
 
 from lock import lock
 from models.accountModel import AccountModel, auth, g
 from models.collectionModel import CollectionModel
 from models.forumModel import ForumModel
+
+from models.commentModel import CommentModel
+
+API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 
 
 class AccountsInfo(Resource):
@@ -126,11 +131,10 @@ class AccountForums(Resource):
                 forums_followeds = []
                 for i in forums_followed:
                     a = ForumModel.find_forum(id=i)
-                    print(a.json().get('id') != 'None')
-                    if a.json().get('id') != 'None':
-                        forums_followeds.append(a.json())
-                    else:
-                        account.remove_forum_followed(forum=i)
+                    # if a.json().get('id') != 'None':
+                    forums_followeds.append(a.json())
+                    # else:
+                    #   account.remove_forum_followed(forum=i)
 
                 return {'forums_followed': forums_followeds}, 200
             except Exception as e:
@@ -161,6 +165,122 @@ class AccountForums(Resource):
                             return {'message': 'Error {0}: {1}'.format(type(e), e)}, 404
                     else:
                         raise Exception('Error. No Author Email were specified!')
+
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 404
+
+
+class AccountInfo(Resource):
+    def get(self, email=None):
+        with lock.lock:
+            try:
+                account = AccountModel.find_account(email=email)
+                if account.exists:
+                    my_json = account.json()
+                    email = my_json['value']['email']
+                    photo = my_json['value']['photo']
+                    user = email.split('@')[0]
+                    if (my_json['value']['gender'] != None):
+                        # Know game of the comment
+                        comment = CommentModel.find_by_user(user)
+                        if comment.json() != None:
+                            b = comment.json()
+                            game_id = list(b.values())[0].get('game_id')
+                            api_detail = "https://api.rawg.io/api/games/" + game_id + "?key=" + API_KEY
+                            game_detail = requests.get(api_detail).json()
+                            list(b.values())[0]['game_comment'] = game_detail
+                            my_json.get('value')['comment'] = b
+                        # Know collections
+                        ret = CollectionModel.find_by_useremail(user_email=email)
+                        a = ([ret[key].json() for key in ret.keys()])
+                        my_json.get('value')['collections'] = a
+
+                        top_games = my_json.get('value')['top_games']
+                        all_games = []
+                        for i in top_games:
+                            game = requests.get("https://api.rawg.io/api/games/" + i + "?key=" + API_KEY).json()
+                            all_games.append(game)
+
+                        my_json.get('value')['all_games'] = all_games
+                    return {'account': my_json}, 200
+                else:
+                    return {'account': {}}, 404  # not found
+            except Exception as e:
+                return {'message': 'Account with email [{0}] doesn\'t exists'.format(email)}, 404
+
+    def put(self, email=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument(AccountModel.name_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.gender_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.birthday_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.location_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
+            parser.add_argument(AccountModel.fav_categories_col_name, action='append', help='<Required> Set flag',
+                                required=True)
+
+            parser.add_argument(AccountModel.top_games_col_name, action='append', help='<Required> Set flag',
+                                required=True)
+
+            data = parser.parse_args()
+            print(data)
+            if data:
+                name = data[AccountModel.name_col_name]
+                gender = data[AccountModel.gender_col_name]
+                birthday = data[AccountModel.birthday_col_name]
+                location = data[AccountModel.location_col_name]
+                fav_categories = data[AccountModel.fav_categories_col_name]
+                top_games = data[AccountModel.top_games_col_name]
+                try:
+                    account = AccountModel.find_account(email=email)
+                    if account and account.exists:
+                        # accounts.add_or_remove_like(id,rate)
+                        account.update_document(name=name, gender=gender, birthday=birthday, location=location,
+                                                fav_categories=fav_categories, top_games=top_games)
+                    return {'message': 'Account updated successfully'}, 201
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {}:{}'.format(type(e), e)}, 400
+
+
+class AccountCalendar(Resource):
+
+    # @auth.login_required(role=['user', 'admin'])
+    def get(self, email=None):
+        with lock.lock:
+            try:
+                account = AccountModel.find_account(email=email)
+                calendar_releases = account.get_calendar_releases()
+
+                return {'calendar_releases': calendar_releases}, 200
+            except Exception as e:
+                return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+
+    # @auth.login_required(role=['user', 'admin'])
+    def post(self, email=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+            parser.add_argument('game_id', type=str, required=False, help='This field cannot be left blank')
+            parser.add_argument('game_title', type=str, required=True, help='This field cannot be left blank')
+            parser.add_argument('game_image', type=str, required=True, help='This field cannot be left blank')
+            parser.add_argument('game_date', type=str, required=True, help='This field cannot be left blank')
+            data = parser.parse_args()
+            if data:
+                game_id = int(data['game_id'])
+                game_title = data['game_title']
+                game_image = data['game_image']
+                game_date = data['game_date']
+
+                try:
+                    accounts = AccountModel.find_account(email=email)
+                    accounts.add_or_remove_calendar_releases(game_id=game_id, game_title=game_title,
+                                                             game_image=game_image, game_date=game_date)
+                    calendar_releases = accounts.get_calendar_releases()
+                    return {"account": calendar_releases}, 201
 
                 except Exception as e:
                     return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400

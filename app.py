@@ -16,7 +16,7 @@ from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
 
 # resources imports
-from resources.account import Accounts, AccountLike, AccountForums
+from resources.account import Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
@@ -24,7 +24,7 @@ from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameF
     ListMostPopularGames
 from resources.news import News
 from resources.publications import ForumPublications, Publications, ForumPublicationLike
-
+from resources.calendar import Calendar
 app = Flask(__name__)
 environment = config['development']
 if config_decouple('PRODUCTION', cast=bool, default=False):
@@ -51,6 +51,8 @@ api.add_resource(Accounts, '/account/email/<string:email>', '/account/id/<string
 api.add_resource(LogIn, '/login')
 api.add_resource(AccountLike, '/account/like/<string:id>')
 api.add_resource(AccountForums, '/account/forums/<string:email>')
+api.add_resource(AccountInfo, '/account/info/<string:email>')
+api.add_resource(AccountCalendar, '/account/calendar/<string:email>')
 
 # Games
 api.add_resource(Games, '/games')
@@ -81,5 +83,9 @@ api.add_resource(ForumsList, '/forums')
 api.add_resource(ForumPublications, '/forum/<string:id>/publications')
 api.add_resource(Publications, '/forum/<string:id>/publication', '/publication/<string:id>')
 api.add_resource(ForumPublicationLike, '/publicationLike/<string:id>',)
+
+# Calendar
+api.add_resource(Calendar, '/calendar')
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
