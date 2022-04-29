@@ -20,7 +20,7 @@ from resources.account import Accounts, AccountLike, AccountForums, AccountInfo,
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
-from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
+from resources.games import Games, GamesAccordingFav, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
     ListMostPopularGames
 from resources.news import News
 from resources.publications import ForumPublications, Publications, ForumPublicationLike
@@ -62,6 +62,7 @@ api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
 api.add_resource(GameCommentsList, '/gameComments/<string:id>')
 api.add_resource(ListMostPopularGames, '/listGames/<string:id>', '/listGames')
+api.add_resource(GamesAccordingFav, '/gamesFavCategories/<string:email>')
 
 # Comments
 api.add_resource(CommentsList, '/comments')

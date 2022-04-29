@@ -3,6 +3,7 @@ import requests
 from bson import json_util
 
 from lock import lock
+from models.accountModel import AccountModel
 from models.commentModel import CommentModel
 
 API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
@@ -165,3 +166,28 @@ class ListMostPopularGames(Resource):
             return {'games': list_games}, 200
         except Exception as e:
             return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+
+
+class GamesAccordingFav(Resource):
+    def get(self, email):
+        try:
+            account = AccountModel.find_account(email=email)
+            #Get fav_categories from account
+            fav_categories = account.get_fav_categories()
+            #Check if fav_categories is empty
+            if len(fav_categories) == 0:
+                return {'message': 'No categories found'}, 204
+            else:
+                api_url="genres="
+                for i in range(len(fav_categories)):
+                    if i == len(fav_categories)-1:
+                        api_url += fav_categories[i].lower()
+                    else:
+                        api_url += fav_categories[i].lower() + ","
+                api_detail = "https://api.rawg.io/api/games?" + api_url + "ordering=-metacritic&key=" + API_KEY
+                games = requests.get(api_detail)
+                my_json = games.json().get("results")
+                return {'games': my_json}, 200
+        except Exception as e:
+            return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+

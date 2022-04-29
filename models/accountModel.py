@@ -230,6 +230,9 @@ class AccountModel(DocumentModel):
     def get_forums_followed(self):
         return self.get_column(col_name=self.forums_followed_col_name, col_type=list)
 
+    def get_fav_categories(self):
+        return self.get_column(col_name=self.fav_categories_col_name, col_type=list)
+
     def get_calendar_releases(self):
         return self.get_column(col_name=self.calendar_releases_col_name, col_type=list)
 
