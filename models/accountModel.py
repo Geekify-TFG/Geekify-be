@@ -145,7 +145,6 @@ class AccountModel(DocumentModel):
                 self.__hash_password__(str(password))
             if name:
                 self.__update_column__(self.name_col_name, str(name))
-
             if photo:
                 self.__update_column__(self.photo_col_name, str(photo))
             if is_admin:

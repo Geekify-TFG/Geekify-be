@@ -212,7 +212,8 @@ class AccountInfo(Resource):
     def put(self, email=None):
         with lock.lock:
             parser = reqparse.RequestParser()
-
+            parser.add_argument(AccountModel.photo_col_name, type=str, required=False,
+                                help="This field cannot be left blank.")
             parser.add_argument(AccountModel.name_col_name, type=str, required=False,
                                 help="This field cannot be left blank.")
             parser.add_argument(AccountModel.gender_col_name, type=str, required=False,
@@ -222,25 +223,23 @@ class AccountInfo(Resource):
             parser.add_argument(AccountModel.location_col_name, type=str, required=False,
                                 help="This field cannot be left blank.")
             parser.add_argument(AccountModel.fav_categories_col_name, action='append', help='<Required> Set flag',
-                                required=True)
-
+                                required=False)
             parser.add_argument(AccountModel.top_games_col_name, action='append', help='<Required> Set flag',
-                                required=True)
+                                required=False)
 
             data = parser.parse_args()
-            print(data)
             if data:
-                name = data[AccountModel.name_col_name]
-                gender = data[AccountModel.gender_col_name]
-                birthday = data[AccountModel.birthday_col_name]
-                location = data[AccountModel.location_col_name]
-                fav_categories = data[AccountModel.fav_categories_col_name]
-                top_games = data[AccountModel.top_games_col_name]
+                name = data[AccountModel.name_col_name] if data[AccountModel.name_col_name] else None
+                photo = data[AccountModel.photo_col_name] if data[AccountModel.photo_col_name] else None
+                gender = data[AccountModel.gender_col_name] if data[AccountModel.gender_col_name] else None
+                birthday = data[AccountModel.birthday_col_name] if data[AccountModel.birthday_col_name] else None
+                location = data[AccountModel.location_col_name] if data[AccountModel.location_col_name] else None
+                fav_categories = data[AccountModel.fav_categories_col_name] if data[AccountModel.fav_categories_col_name] else None
+                top_games = data[AccountModel.top_games_col_name] if data[AccountModel.top_games_col_name] else None
                 try:
                     account = AccountModel.find_account(email=email)
                     if account and account.exists:
-                        # accounts.add_or_remove_like(id,rate)
-                        account.update_document(name=name, gender=gender, birthday=birthday, location=location,
+                        account.update_document(photo=photo,name=name, gender=gender, birthday=birthday, location=location,
                                                 fav_categories=fav_categories, top_games=top_games)
                     return {'message': 'Account updated successfully'}, 201
                 except Exception as e:
