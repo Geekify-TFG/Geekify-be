@@ -120,12 +120,12 @@ def users_comment_games():
             date = (random.choice(Dates))
             image_user = (random.choice(Photo))
             content = (random.choice(Comments))
-            new_comment = CommentModel(date, content, username, game, image_user)
+            new_comment = CommentModel(date, content, user, game, image_user)
             new_comment.save_to_db()
 
 
 add_comments = users_comment_games()
-
+create_users =create_users()
 if __name__ == "__main__":
     add_comments
-    # create_users()
+    # create_users

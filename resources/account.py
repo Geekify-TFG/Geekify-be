@@ -203,6 +203,7 @@ class AccountInfo(Resource):
                             all_games.append(game)
 
                         my_json.get('value')['all_games'] = all_games
+                        del my_json.get('value')['password']
                     return {'account': my_json}, 200
                 else:
                     return {'account': {}}, 404  # not found
