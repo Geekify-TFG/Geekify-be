@@ -61,11 +61,10 @@ class PublicationModel(DocumentModel):
             if image_user:
                 self.__update_column__('image_user', image_user)
             if likes:
-                print(likes,len(likes))
                 self.__update_column__('likes', likes)
                 self.__update_column__('num_likes', len(likes))
             if num_likes:
-                print(num_likes)
+                (num_likes)
                 self.__update_column__('num_likes', num_likes)
 
             self.collection.find_one_and_update(

@@ -1,6 +1,8 @@
 import os
 from datetime import date
 import random
+from urllib import response
+import json
 
 from flask import g, current_app
 from flask_httpauth import HTTPBasicAuth
@@ -34,7 +36,7 @@ class AccountModel(DocumentModel):
     """
     __column_names__ = ['email', 'password', 'name',
                         'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed', 'gender', 'birthday',
-                        'location', 'fav_categories', 'top_games', 'calendar_releases']
+                        'location', 'fav_categories', 'top_games', 'calendar_releases','followed_users']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -51,6 +53,7 @@ class AccountModel(DocumentModel):
     fav_categories_col_name = __column_names__[11]
     top_games_col_name = __column_names__[12]
     calendar_releases_col_name = __column_names__[13]
+    followed_users_col_name = __column_names__[14]
 
     __password_hashed__ = False
 
@@ -69,7 +72,8 @@ class AccountModel(DocumentModel):
             location=None,
             fav_categories=[],
             top_games=[],
-            calendar_releases=[]
+            calendar_releases=[],
+            followed_users=[]
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -99,6 +103,7 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.fav_categories_col_name)] = fav_categories
             columns['{0}'.format(self.top_games_col_name)] = top_games
             columns['{0}'.format(self.calendar_releases_col_name)] = calendar_releases
+            columns['{0}'.format(self.followed_users_col_name)] = followed_users
 
             self.set_doc_ref(columns.copy())
 
@@ -135,7 +140,7 @@ class AccountModel(DocumentModel):
 
     def update_document(
             self, password=None, email=None, name=None, photo=None, is_admin=None, likes=None, forums_followed=None,
-            gender=None, birthday=None, location=None, fav_categories=None, top_games=None, calendar_releases=None
+            gender=None, birthday=None, location=None, fav_categories=None, top_games=None, calendar_releases=None,followed_users=None
     ):
         # if it's already exists then update
         if self.exists:
@@ -155,7 +160,7 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.forums_followed_col_name, forums_followed)
             if gender:
                 self.__update_column__(self.gender_col_name, gender)
-            if gender:
+            if birthday:
                 self.__update_column__(self.birthday_col_name, birthday)
             if location:
                 self.__update_column__(self.location_col_name, location)
@@ -165,6 +170,8 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.top_games_col_name, top_games)
             if calendar_releases:
                 self.__update_column__(self.calendar_releases_col_name, calendar_releases)
+            if followed_users:
+                self.__update_column__(self.followed_users_col_name, followed_users)
 
             self.collection.find_one_and_update(
                 {'_id': self.id},
@@ -189,7 +196,8 @@ class AccountModel(DocumentModel):
             location=None,
             fav_categories=None,
             top_games=None,
-            calendar_releases=None
+            calendar_releases=None,
+            followed_users=None
     ):
         account = cls.find_by_id(id)
         if account.exists:
@@ -206,7 +214,8 @@ class AccountModel(DocumentModel):
                 location=location,
                 fav_categories=fav_categories,
                 top_games=top_games,
-                calendar_releases=calendar_releases
+                calendar_releases=calendar_releases,
+                followed_users=followed_users
             )
 
     def delete_from_db(self):
@@ -234,6 +243,9 @@ class AccountModel(DocumentModel):
 
     def get_calendar_releases(self):
         return self.get_column(col_name=self.calendar_releases_col_name, col_type=list)
+
+    def get_followed_users(self):
+        return self.get_column(col_name=self.followed_users_col_name, col_type=list)
 
     def add_or_remove_like(self, game, rate):
         my_likes = self.get_likes()
@@ -263,7 +275,6 @@ class AccountModel(DocumentModel):
 
     def add_or_remove_calendar_releases(self, game_id, game_title, game_image, game_date):
         calendar_releases = self.get_calendar_releases()
-        print(calendar_releases, game_id)
         if any(d['id'] == game_id for d in calendar_releases):
             calendar_releases.remove({'id': game_id, 'title': game_title, 'url': game_image, 'date': game_date})
         else:
@@ -275,6 +286,25 @@ class AccountModel(DocumentModel):
         forums_followed = self.get_forums_followed()
 
         forums_followed.remove(u'{0}'.format(forum))
+
+    def add_or_remove_followed_user(self, user):
+        if user:
+            followed_users = self.get_followed_users()
+            if user in followed_users:
+                followed_users.remove(u'{0}'.format(user))
+            else:
+                followed_users.append(u'{}'.format(user))
+            self.update_document(followed_users=followed_users)
+    
+    def get_info_followed_users(self):
+            followed_users = self.get_followed_users()
+            # Create array with the email and photo of the users followed
+            info_followed_users = []
+            for user in followed_users:
+                user_info = AccountModel.find_account(email=user)
+                user = user_info.json()['value']
+                info_followed_users.append({'email': user['email'], 'photo': user['photo']})
+            return info_followed_users
 
     @classmethod
     def find_account(cls, email=None, id=None):
