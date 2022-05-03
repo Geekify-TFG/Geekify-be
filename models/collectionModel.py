@@ -139,17 +139,6 @@ class CollectionModel(DocumentModel):
                 user_email=user_email
             )
 
-    def update_tags(self, new_tag):
-        self.collection.find_one_and_update(
-            {'_id': self.id},
-            {
-                '$push': {
-                    "games": new_tag
-                }
-
-            }
-        )
-
     def get_collection(self):
         return self.get_column(col_name=self.games_col_name, col_type=list)
 
@@ -157,7 +146,6 @@ class CollectionModel(DocumentModel):
     def add_game_collection(self,game_detail):
         collection = self.get_column(col_name='games', col_type=list)
         #Iterate over the list and check if the game is already in the list
-        print('game does not exist')
         collection.append(game_detail)
 
         self.update_document(games=collection)
@@ -171,7 +159,6 @@ class CollectionModel(DocumentModel):
 
     def increment_len(self):
         games = self.get_column(col_name='games', col_type=list)
-        print(len(games))
         num_games = len(games) + 1
         self.update_document(num_games=num_games)
 

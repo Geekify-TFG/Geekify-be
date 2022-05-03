@@ -56,7 +56,7 @@ class Comments(Resource):
                         response = requests.get(api_game)
                         if response.status_code == 200:
                             try:
-                                comment = CommentModel(date, content, username, game_id, image_user)
+                                comment = CommentModel(date, content, user, game_id, image_user)
                                 my_json = comment.save_to_db()
                                 if comment and comment.exists:
                                     try:

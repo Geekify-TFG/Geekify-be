@@ -16,11 +16,11 @@ from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
 
 # resources imports
-from resources.account import Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar
+from resources.account import Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar, FollowUser
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
-from resources.games import Games, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
+from resources.games import Games, GamesAccordingFav, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
     ListMostPopularGames
 from resources.news import News
 from resources.publications import ForumPublications, Publications, ForumPublicationLike
@@ -53,6 +53,7 @@ api.add_resource(AccountLike, '/account/like/<string:id>')
 api.add_resource(AccountForums, '/account/forums/<string:email>')
 api.add_resource(AccountInfo, '/account/info/<string:email>')
 api.add_resource(AccountCalendar, '/account/calendar/<string:email>')
+api.add_resource(FollowUser, '/account/followUser/<string:email>')
 
 # Games
 api.add_resource(Games, '/games')
@@ -62,6 +63,7 @@ api.add_resource(GamesByOrder, '/games/filter/<string:order>')
 api.add_resource(GameFilters, '/games/filters')
 api.add_resource(GameCommentsList, '/gameComments/<string:id>')
 api.add_resource(ListMostPopularGames, '/listGames/<string:id>', '/listGames')
+api.add_resource(GamesAccordingFav, '/gamesFavCategories/<string:email>')
 
 # Comments
 api.add_resource(CommentsList, '/comments')

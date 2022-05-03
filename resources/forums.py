@@ -13,9 +13,9 @@ class Forum(Resource):
         with lock.lock:
             try:
                 if id:
-                    collection = ForumModel.find_by_id(id)
-                    if collection.exists:
-                        my_json = collection.json()
+                    forum = ForumModel.find_by_id(id)
+                    if forum.exists:
+                        my_json = forum.json()
                         try:
                             return {'forum': my_json}, 200
                         except Exception as e:
