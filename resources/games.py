@@ -57,12 +57,12 @@ class GamesByOrder(Resource):
                     my_json = games.json()
                     return {'games': my_json}, 200
                 if order.upper() == "RELEASED":
-                    api_release = "https://api.rawg.io/api/games?ordering=-" + order + "&key=" + API_KEY
+                    api_release = "https://api.rawg.io/api/games?dates=2021,2022&ordering=-metacritic&key=" + API_KEY
                     games = requests.get(api_release)
                     my_json = games.json()
                     return {'games': my_json}, 200
                 if order.upper() == "RATING":
-                    api_release = "https://api.rawg.io/api/games?ordering=-" + order + "&key=" + API_KEY
+                    api_release = "https://api.rawg.io/api/games?metacritic=90,100&ordering=-metacritic&key=" + API_KEY
                     games = requests.get(api_release)
                     my_json = games.json()
                     return {'games': my_json}, 200
