@@ -16,7 +16,7 @@ from models.collectionModel import CollectionModel
 from models.commentModel import CommentModel
 
 # resources imports
-from resources.account import Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar, FollowUser
+from resources.account import AccountStateGame, Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar, FollowUser
 from resources.comments import CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
@@ -50,6 +50,7 @@ mongo = pymongo.MongoClient(CONNECTION_STRING, tls=True, tlsAllowInvalidCertific
 api.add_resource(Accounts, '/account/email/<string:email>', '/account/id/<string:id>', '/account/user')
 api.add_resource(LogIn, '/login')
 api.add_resource(AccountLike, '/account/like/<string:id>')
+api.add_resource(AccountStateGame, '/account/state/<string:id>')
 api.add_resource(AccountForums, '/account/forums/<string:email>')
 api.add_resource(AccountInfo, '/account/info/<string:email>')
 api.add_resource(AccountCalendar, '/account/calendar/<string:email>')

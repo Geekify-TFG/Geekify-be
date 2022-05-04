@@ -36,7 +36,7 @@ class AccountModel(DocumentModel):
     """
     __column_names__ = ['email', 'password', 'name',
                         'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed', 'gender', 'birthday',
-                        'location', 'fav_categories', 'top_games', 'calendar_releases','followed_users']
+                        'location', 'fav_categories', 'top_games', 'calendar_releases','followed_users','state_game']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -54,6 +54,7 @@ class AccountModel(DocumentModel):
     top_games_col_name = __column_names__[12]
     calendar_releases_col_name = __column_names__[13]
     followed_users_col_name = __column_names__[14]
+    state_game_col_name = __column_names__[15]
 
     __password_hashed__ = False
 
@@ -73,7 +74,8 @@ class AccountModel(DocumentModel):
             fav_categories=[],
             top_games=[],
             calendar_releases=[],
-            followed_users=[]
+            followed_users=[],
+            state_game=[]
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -104,6 +106,7 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.top_games_col_name)] = top_games
             columns['{0}'.format(self.calendar_releases_col_name)] = calendar_releases
             columns['{0}'.format(self.followed_users_col_name)] = followed_users
+            columns['{0}'.format(self.state_game_col_name)] = state_game
 
             self.set_doc_ref(columns.copy())
 
@@ -140,7 +143,7 @@ class AccountModel(DocumentModel):
 
     def update_document(
             self, password=None, email=None, name=None, photo=None, is_admin=None, likes=None, forums_followed=None,
-            gender=None, birthday=None, location=None, fav_categories=None, top_games=None, calendar_releases=None,followed_users=None
+            gender=None, birthday=None, location=None, fav_categories=None, top_games=None, calendar_releases=None,followed_users=None,state_game=None
     ):
         # if it's already exists then update
         if self.exists:
@@ -172,6 +175,8 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.calendar_releases_col_name, calendar_releases)
             if followed_users:
                 self.__update_column__(self.followed_users_col_name, followed_users)
+            if state_game:
+                self.__update_column__(self.state_game_col_name, state_game)
 
             self.collection.find_one_and_update(
                 {'_id': self.id},
@@ -197,7 +202,8 @@ class AccountModel(DocumentModel):
             fav_categories=None,
             top_games=None,
             calendar_releases=None,
-            followed_users=None
+            followed_users=None,
+            state_game=None
     ):
         account = cls.find_by_id(id)
         if account.exists:
@@ -215,7 +221,8 @@ class AccountModel(DocumentModel):
                 fav_categories=fav_categories,
                 top_games=top_games,
                 calendar_releases=calendar_releases,
-                followed_users=followed_users
+                followed_users=followed_users,
+                state_game=state_game
             )
 
     def delete_from_db(self):
@@ -234,6 +241,9 @@ class AccountModel(DocumentModel):
 
     def get_likes(self):
         return self.get_column(col_name='likes', col_type=list)
+
+    def get_game_state(self):
+        return self.get_column(col_name=self.state_game_col_name, col_type=list)
 
     def get_forums_followed(self):
         return self.get_column(col_name=self.forums_followed_col_name, col_type=list)
@@ -257,6 +267,17 @@ class AccountModel(DocumentModel):
         new_rate = ([item for item in my_likes if item.get('game_id') != game])
         new_rate.append({'game_id': game, 'rating': rate})
         self.update_document(likes=new_rate)
+
+    def add_or_remove_game_state(self, game, state):
+        state_game = self.get_game_state()
+        state_game.append({'game_id': game, 'state': state})
+        self.update_document(state_game=state_game)
+
+    def update_game_state(self, game, state):
+        state_game = self.get_game_state()
+        new_state = ([item for item in state_game if item.get('game_id') != game])
+        new_state.append({'game_id': game, 'state': state})
+        self.update_document(state_game=new_state)
 
     def remove_like(self, game):
         my_likes = self.get_likes()

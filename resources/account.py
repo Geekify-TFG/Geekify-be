@@ -120,6 +120,42 @@ class AccountLike(Resource):
                 return {'message': 'Liked added successfully'}, 201
 
 
+class AccountStateGame(Resource):
+
+    def post(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('state', type=str, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                state = data['state']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    # accounts.add_or_remove_like(id,rate)
+                    accounts.add_or_remove_game_state(id, state)
+                return {'message': 'State of the game added successfully'}, 201
+
+    def put(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('state', type=str, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                state = data['state']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    accounts.update_game_state(id, state)
+                return {'message': 'State of the game added successfully'}, 201
+
+
 class AccountForums(Resource):
 
     # @auth.login_required(role=['user', 'admin'])
