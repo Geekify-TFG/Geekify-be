@@ -269,9 +269,9 @@ class AccountModel(DocumentModel):
         self.update_document(likes=new_rate)
 
     def add_or_remove_game_state(self, game, state):
-        state_game = self.get_game_state()
-        state_game.append({'game_id': game, 'state': state})
-        self.update_document(state_game=state_game)
+        game_state = self.get_game_state()
+        game_state.append({'game_id': game, 'state': state})
+        self.update_document(state_game=game_state)
 
     def update_game_state(self, game, state):
         state_game = self.get_game_state()
