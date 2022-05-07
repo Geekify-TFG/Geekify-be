@@ -88,7 +88,6 @@ class PublicationModel(DocumentModel):
                 likes.remove(u'{0}'.format(user))
             else:
                 likes.append(u'{}'.format(user))
-            #num_likes = len(likes)
             self.update_document(likes=likes,num_likes=num_likes)
 
     @classmethod

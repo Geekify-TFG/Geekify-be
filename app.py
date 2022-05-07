@@ -17,7 +17,7 @@ from models.commentModel import CommentModel
 
 # resources imports
 from resources.account import AccountStateGame, Accounts, AccountLike, AccountForums, AccountInfo, AccountCalendar, FollowUser
-from resources.comments import CommentsList, Comments
+from resources.comments import CommentLike, CommentsList, Comments
 from resources.forums import Forum, ForumsList
 from resources.login import LogIn
 from resources.games import Games, GamesAccordingFav, GamesByTitle, GamesByOrder, GameDetail, GameFilters, GameCommentsList, \
@@ -69,6 +69,7 @@ api.add_resource(GamesAccordingFav, '/gamesFavCategories/<string:email>')
 # Comments
 api.add_resource(CommentsList, '/comments')
 api.add_resource(Comments, '/comment/<string:id>')
+api.add_resource(CommentLike, '/commentLike/<string:id>')
 
 # Collections
 api.add_resource(Collections, '/collection', '/collection/<string:id>', '/collections/<string:email>/')

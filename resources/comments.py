@@ -105,3 +105,22 @@ class CommentsList(Resource):
                 return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
             except Exception as e:
                 return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+
+
+class CommentLike(Resource):
+
+    def post(self, id):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('email', type=str, required=True, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            try:
+                user = data['email']
+                ret = CommentModel.find_comment(id)
+                ret.add_or_remove_like_comment(user)
+
+                return {'comment': ret.json()}, 202
+            except Exception as e:
+                return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
