@@ -81,6 +81,36 @@ class Accounts(Resource):
                 except Exception as e:
                     return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
             return {'message': 'An error occurred parsing arguments.'}, 400
+    
+    def put(self, email=None, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+            parser.add_argument(AccountModel.pass_col_name, type=str, required=True)
+            data = parser.parse_args()
+            if data:
+                try:
+                    password = data[AccountModel.pass_col_name]
+                    # password region
+                    if password:
+                        # check password (if completes out rules)
+                        # password region
+                        try:
+                            # create new account
+                            account = AccountModel.find_account(email=email)
+                            account.update_document(password=password)
+                            account.hash_password()
+                            my_json = account.json().get('value')
+
+                            return {"account": my_json}, 201
+                        except Exception as e:
+                            return {
+                                       'message': 'An error occurred creating the account. {0}:{1}'.format(type(e), e)
+                                   }, 500
+                    else:
+                        raise Exception('Error. no password were specified for this account!')
+                except Exception as e:
+                    return {'message': 'An error occurred you send a bad request. {0}:{1}'.format(type(e), e)}, 400
+            return {'message': 'An error occurred parsing arguments.'}, 400
 
 
 class AccountLike(Resource):
@@ -118,6 +148,42 @@ class AccountLike(Resource):
                     # accounts.add_or_remove_like(id,rate)
                     accounts.update_rate(id, rate)
                 return {'message': 'Liked added successfully'}, 201
+
+
+class AccountStateGame(Resource):
+
+    def post(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('state', type=str, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                state = data['state']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    # accounts.add_or_remove_like(id,rate)
+                    accounts.add_or_remove_game_state(id, state)
+                return {'message': 'State of the game added successfully'}, 201
+
+    def put(self, id=None):
+        with lock.lock:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('state', type=str, required=False, help="This field cannot be left blank.")
+            parser.add_argument('user', type=str, required=False, help="This field cannot be left blank.")
+
+            data = parser.parse_args()
+            if data:
+                state = data['state']
+                user = data['user']
+                if user:
+                    accounts = AccountModel.find_account(email=user)
+                    accounts.update_game_state(id, state)
+                return {'message': 'State of the game added successfully'}, 201
 
 
 class AccountForums(Resource):
