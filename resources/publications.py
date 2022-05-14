@@ -56,7 +56,7 @@ class Publications(Resource):
 
                     if accounts.exists:
                         try:
-                            publication = PublicationModel(date, content, username, forum_id, image_user)
+                            publication = PublicationModel(date, content, user, forum_id, image_user)
                             forum = ForumModel.find_forum(id=forum_id)
                             my_json = publication.save_to_db()
                             forum.add_or_remove_publication(publication=my_json)
