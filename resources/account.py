@@ -8,7 +8,7 @@ from models.forumModel import ForumModel
 
 from models.commentModel import CommentModel
 
-API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
+API_KEY = '37ba2daee1ea4636b4b96fb2cf0193b3'
 
 
 class AccountsInfo(Resource):

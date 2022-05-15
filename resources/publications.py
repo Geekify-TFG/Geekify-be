@@ -9,7 +9,6 @@ from models.publicationModel import PublicationModel
 
 from models.forumModel import ForumModel
 
-API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
 
 
 class Publications(Resource):

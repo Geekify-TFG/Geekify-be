@@ -103,7 +103,7 @@ def create_users():
 
 def users_comment_games():
     accounts = AccountModel.get_all()
-    API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
+    API_KEY = '37ba2daee1ea4636b4b96fb2cf0193b3'
     games_id = []
     for i in range(1, 6):
         api_rawg = "https://api.rawg.io/api/games?page={0}&key=".format(i) + API_KEY
