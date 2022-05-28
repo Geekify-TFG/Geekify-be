@@ -70,9 +70,11 @@ class ForumModel(DocumentModel):
             except Exception as e:
                 raise Exception('missing arguments! \n Error  {0}:{1}'.format(type(e), e))
         else:
+            if(image == None):
+                image = random.choice(Photo)
             columns['{0}'.format(self.title_col_name)] = str(title)
             columns['{0}'.format(self.description_col_name)] = str(description)
-            columns['{0}'.format(self.image_col_name)] = '{0}'.format(random.choice(Photo))
+            columns['{0}'.format(self.image_col_name)] = image 
             columns['{0}'.format(self.tag_col_name)] = tag
             columns['{0}'.format(self.game_col_name)] = game
             columns['{0}'.format(self.users_col_name)] = users
