@@ -3,8 +3,10 @@ import requests
 from bson import json_util
 
 from lock import lock
+from models.accountModel import AccountModel
+from models.commentModel import CommentModel
 
-API_KEY = '40f3cb2ff2c94a5889d3d6c865415ec5'
+API_KEY = '37ba2daee1ea4636b4b96fb2cf0193b3'
 api_rawg = "https://api.rawg.io/api/games?key=" + API_KEY
 # api_rawg = "https://api.rawg.io/api/games/lists/main?key=" + API_KEY
 response = requests.get(api_rawg)
@@ -36,7 +38,7 @@ class GamesByTitle(Resource):
         with lock.lock:
             try:
                 if title is None:
-                    return {'publications': {}}, 204
+                    return {'games': {}}, 204
                 else:
                     api_search = "https://api.rawg.io/api/games?key=" + API_KEY + "&search=" + title + "&ordering=-added&search_exact=true"
                     games = requests.get(api_search).json()
@@ -55,17 +57,17 @@ class GamesByOrder(Resource):
                     my_json = games.json()
                     return {'games': my_json}, 200
                 if order.upper() == "RELEASED":
-                    api_release = "https://api.rawg.io/api/games?ordering=-" + order + "&key=" + API_KEY
+                    api_release = "https://api.rawg.io/api/games?dates=2021,2022&ordering=-metacritic&key=" + API_KEY
                     games = requests.get(api_release)
                     my_json = games.json()
                     return {'games': my_json}, 200
                 if order.upper() == "RATING":
-                    api_release = "https://api.rawg.io/api/games?ordering=-" + order + "&key=" + API_KEY
+                    api_release = "https://api.rawg.io/api/games?metacritic=90,100&ordering=-metacritic&key=" + API_KEY
                     games = requests.get(api_release)
                     my_json = games.json()
                     return {'games': my_json}, 200
             except:
-                return {'message': 'Collection of publications not found'}, 500
+                return {'message': 'Collection of games not found'}, 500
 
 
 class GameDetail(Resource):
@@ -74,7 +76,7 @@ class GameDetail(Resource):
         with lock.lock:
             try:
                 if id is None:
-                    return {'publications': {}}, 204
+                    return {'games': {}}, 204
                 else:
                     api_detail = "https://api.rawg.io/api/games/" + id + "?key=" + API_KEY
                     game_detail = requests.get(api_detail).json()
@@ -135,3 +137,57 @@ class GameFilters(Resource):
         api_detail += api_url + "ordering=-metacritic&key=" + API_KEY
         games = requests.get(api_detail).json()
         return {'games': games}, 200
+
+
+class GameCommentsList(Resource):
+
+    def get(self, id):
+        with lock.lock:
+            try:
+                ret = CommentModel.find_by_game(id)
+                if len(ret) == 0:
+                    return {'comments': {}}, 204
+                return {'comments': {key: ret[key].json()[key] for key in ret.keys()}}, 202
+            except Exception as e:
+                return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+
+
+class ListMostPopularGames(Resource):
+
+    def get(self, id=4):
+        try:
+            list_games = []
+            for i in range(1, int(id)):
+                api_rawg = "https://api.rawg.io/api/games?page={0}&key=".format(i) + API_KEY
+                games = requests.get(api_rawg)
+                my_json = games.json().get("results")
+                for index in range(len(my_json)):
+                    list_games.append({'id': my_json[index]['id'], 'name': my_json[index]['name']})
+            return {'games': list_games}, 200
+        except Exception as e:
+            return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+
+
+class GamesAccordingFav(Resource):
+    def get(self, email):
+        try:
+            account = AccountModel.find_account(email=email)
+            #Get fav_categories from account
+            fav_categories = account.get_fav_categories()
+            #Check if fav_categories is empty
+            if len(fav_categories) == 0:
+                return {'message': 'No categories found'}, 204
+            else:
+                api_url="genres="
+                for i in range(len(fav_categories)):
+                    if i == len(fav_categories)-1:
+                        api_url += fav_categories[i].lower()
+                    else:
+                        api_url += fav_categories[i].lower() + ","
+                api_detail = "https://api.rawg.io/api/games?" + api_url + "ordering=-metacritic&key=" + API_KEY
+                games = requests.get(api_detail)
+                my_json = games.json().get("results")
+                return {'games': my_json}, 200
+        except Exception as e:
+            return {'message': 'Internal server error {0}:{1}'.format(type(e), e)}, 500
+

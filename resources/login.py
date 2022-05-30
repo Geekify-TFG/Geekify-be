@@ -1,10 +1,11 @@
 from flask_restful import Resource, reqparse
 from lock import lock
-from models.accountModel import AccountModel
+from models.accountModel import AccountModel, auth
 
 
 class LogIn(Resource):
 
+    @auth.login_required(role=['user', 'admin'])
     def get(self, email=None, password=None, id=None):
         with lock.lock:
             account = AccountModel.find_account(email=email, id=id)
@@ -37,7 +38,8 @@ class LogIn(Resource):
                     if account and account.exists:
                         if account.verify_password(password=password):
                             token = account.generate_auth_token()
-                            return {'token': token.decode('ascii')}, 200
+                            return {'account': {'value': account.json().get('value'),
+                                                'token': token.decode('ascii')}}, 200
                         return {'message': 'Incorrect password for email [{}] '.format(eml)}, 400
                     return {'message': "An error occurred. Account not found"}, 404
                 except Exception as e:

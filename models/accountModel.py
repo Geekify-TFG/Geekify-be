@@ -1,5 +1,8 @@
 import os
 from datetime import date
+import random
+from urllib import response
+import json
 
 from flask import g, current_app
 from flask_httpauth import HTTPBasicAuth
@@ -16,6 +19,15 @@ auth = HTTPBasicAuth()
     account (email, password(encrypted), name, ...)
 '''
 
+Photo = [
+    "https://i.picsum.photos/id/473/200/200.jpg?hmac=lXsJQxtsh73ygSCMmcWA-YqIpQ4FjdxUYkkuLTAPBfM",
+    "https://i.picsum.photos/id/305/200/200.jpg?hmac=GAm9fW477iVRZTOeQCdEqLVug4lTf8wnHHzLof8RbFQ",
+    "https://i.picsum.photos/id/400/200/200.jpg?hmac=YLB07yPNCdu_zyt5Mr1eLqUtqY7nPOmnJBvJea4s7Uc",
+    "https://i.picsum.photos/id/955/200/200.jpg?hmac=_m3ln1pswsR9s9hWuWrwY_O6N4wizKmukfhvyaTrkjE",
+    "https://i.picsum.photos/id/1066/200/200.jpg?hmac=BHYYzH0KERL1WifyefL6hVVg0wURJUgTaByr75WmJug",
+    "https://i.picsum.photos/id/504/200/200.jpg?hmac=uNktbiKQMUD0MuwgQUxt7R2zjHBGFxyUSG3prhX0FWM",
+]
+
 
 class AccountModel(DocumentModel):
     """
@@ -23,7 +35,8 @@ class AccountModel(DocumentModel):
     mongodb - collection called accounts
     """
     __column_names__ = ['email', 'password', 'name',
-                        'initial_date', 'photo','is_admin']
+                        'initial_date', 'photo', 'is_admin', 'likes', 'forums_followed', 'gender', 'birthday',
+                        'location', 'fav_categories', 'top_games', 'calendar_releases','followed_users','state_game']
 
     # columns is a dict where the value for each column are referenced
     email_col_name = __column_names__[0]
@@ -32,6 +45,16 @@ class AccountModel(DocumentModel):
     initial_date_col_name = __column_names__[3]
     photo_col_name = __column_names__[4]
     admin_col_name = __column_names__[5]
+    likes_col_name = __column_names__[6]
+    forums_followed_col_name = __column_names__[7]
+    gender_col_name = __column_names__[8]
+    birthday_col_name = __column_names__[9]
+    location_col_name = __column_names__[10]
+    fav_categories_col_name = __column_names__[11]
+    top_games_col_name = __column_names__[12]
+    calendar_releases_col_name = __column_names__[13]
+    followed_users_col_name = __column_names__[14]
+    state_game_col_name = __column_names__[15]
 
     __password_hashed__ = False
 
@@ -40,9 +63,19 @@ class AccountModel(DocumentModel):
             password=None,
             email=None,
             name=None,
-            photo='https://source.unsplash.com/random',
+            photo=(random.choice(Photo)),
             doc=None,
-            is_admin=0
+            is_admin=0,
+            likes=[],
+            forums_followed=[],
+            gender=None,
+            birthday=None,
+            location=None,
+            fav_categories=[],
+            top_games=[],
+            calendar_releases=[],
+            followed_users=[],
+            state_game=[]
     ):
         super(AccountModel, self).__init__(doc)
         columns = dict.fromkeys(self.__column_names__)
@@ -64,6 +97,17 @@ class AccountModel(DocumentModel):
             columns['{0}'.format(self.photo_col_name)] = photo
             columns['{0}'.format(self.initial_date_col_name)] = date.today().strftime("%d/%m/%Y")
             columns['{0}'.format(self.admin_col_name)] = int(is_admin)
+            columns['{0}'.format(self.likes_col_name)] = likes
+            columns['{0}'.format(self.forums_followed_col_name)] = forums_followed
+            columns['{0}'.format(self.gender_col_name)] = gender
+            columns['{0}'.format(self.birthday_col_name)] = birthday
+            columns['{0}'.format(self.location_col_name)] = location
+            columns['{0}'.format(self.fav_categories_col_name)] = fav_categories
+            columns['{0}'.format(self.top_games_col_name)] = top_games
+            columns['{0}'.format(self.calendar_releases_col_name)] = calendar_releases
+            columns['{0}'.format(self.followed_users_col_name)] = followed_users
+            columns['{0}'.format(self.state_game_col_name)] = state_game
+
             self.set_doc_ref(columns.copy())
 
     # Create new document -- private method
@@ -98,9 +142,8 @@ class AccountModel(DocumentModel):
         return self.__create()
 
     def update_document(
-            self, password=None, email=None, name=None,
-            photo=None, is_admin=None
-
+            self, password=None, email=None, name=None, photo=None, is_admin=None, likes=None, forums_followed=None,
+            gender=None, birthday=None, location=None, fav_categories=None, top_games=None, calendar_releases=None,followed_users=None,state_game=None
     ):
         # if it's already exists then update
         if self.exists:
@@ -108,14 +151,33 @@ class AccountModel(DocumentModel):
                 self.__update_column__(self.email_col_name, str(email))
             if password:
                 self.__hash_password__(str(password))
-
             if name:
                 self.__update_column__(self.name_col_name, str(name))
-
             if photo:
                 self.__update_column__(self.photo_col_name, str(photo))
             if is_admin:
                 self.__update_column__(self.admin_col_name, int(is_admin))
+            if likes:
+                self.__update_column__(self.likes_col_name, likes)
+            if forums_followed:
+                self.__update_column__(self.forums_followed_col_name, forums_followed)
+            if gender:
+                self.__update_column__(self.gender_col_name, gender)
+            if birthday:
+                self.__update_column__(self.birthday_col_name, birthday)
+            if location:
+                self.__update_column__(self.location_col_name, location)
+            if fav_categories:
+                self.__update_column__(self.fav_categories_col_name, fav_categories)
+            if top_games:
+                self.__update_column__(self.top_games_col_name, top_games)
+            if calendar_releases:
+                self.__update_column__(self.calendar_releases_col_name, calendar_releases)
+            if followed_users:
+                self.__update_column__(self.followed_users_col_name, followed_users)
+            if state_game:
+                self.__update_column__(self.state_game_col_name, state_game)
+
             self.collection.find_one_and_update(
                 {'_id': self.id},
                 {
@@ -131,7 +193,17 @@ class AccountModel(DocumentModel):
             email=None,
             name=None,
             photo=None,
-            is_admin=None
+            is_admin=None,
+            likes=None,
+            forums_followed=None,
+            gender=None,
+            birthday=None,
+            location=None,
+            fav_categories=None,
+            top_games=None,
+            calendar_releases=None,
+            followed_users=None,
+            state_game=None
     ):
         account = cls.find_by_id(id)
         if account.exists:
@@ -140,11 +212,120 @@ class AccountModel(DocumentModel):
                 email=email,
                 name=name,
                 photo=photo,
-                is_admin=is_admin
+                is_admin=is_admin,
+                likes=likes,
+                forums_followed=forums_followed,
+                gender=gender,
+                birthday=birthday,
+                location=location,
+                fav_categories=fav_categories,
+                top_games=top_games,
+                calendar_releases=calendar_releases,
+                followed_users=followed_users,
+                state_game=state_game
             )
 
     def delete_from_db(self):
         super(AccountModel, self).delete_from_db()
+
+    def add_like(self, game, rate):
+        self.collection.find_one_and_update(
+            {'_id': self.id},
+            {
+                '$push': {
+                    "likes": {'game_id': game, 'rating': rate}
+                }
+
+            }
+        )
+
+    def get_likes(self):
+        return self.get_column(col_name='likes', col_type=list)
+
+    def get_game_state(self):
+        return self.get_column(col_name=self.state_game_col_name, col_type=list)
+
+    def get_forums_followed(self):
+        return self.get_column(col_name=self.forums_followed_col_name, col_type=list)
+
+    def get_fav_categories(self):
+        return self.get_column(col_name=self.fav_categories_col_name, col_type=list)
+
+    def get_calendar_releases(self):
+        return self.get_column(col_name=self.calendar_releases_col_name, col_type=list)
+
+    def get_followed_users(self):
+        return self.get_column(col_name=self.followed_users_col_name, col_type=list)
+
+    def add_or_remove_like(self, game, rate):
+        my_likes = self.get_likes()
+        my_likes.append({'game_id': game, 'rating': rate})
+        self.update_document(likes=my_likes)
+
+    def update_rate(self, game, rate):
+        my_likes = self.get_likes()
+        new_rate = ([item for item in my_likes if item.get('game_id') != game])
+        new_rate.append({'game_id': game, 'rating': rate})
+        self.update_document(likes=new_rate)
+
+    def add_or_remove_game_state(self, game, state):
+        game_state = self.get_game_state()
+        game_state.append({'game_id': game, 'state': state})
+        self.update_document(state_game=game_state)
+
+    def update_game_state(self, game, state):
+        state_game = self.get_game_state()
+        new_state = ([item for item in state_game if item.get('game_id') != game])
+        new_state.append({'game_id': game, 'state': state})
+        self.update_document(state_game=new_state)
+
+    def remove_like(self, game):
+        my_likes = self.get_likes()
+        my_likes.remove({"key": game})
+
+        self.update_document(likes=my_likes)
+
+    def add_or_remove_forum_followed(self, forum):
+        if forum:
+            forums_followed = self.get_forums_followed()
+            if forum in forums_followed:
+                forums_followed.remove(u'{0}'.format(forum))
+            else:
+                forums_followed.append(u'{}'.format(forum))
+            self.update_document(forums_followed=forums_followed)
+
+    def add_or_remove_calendar_releases(self, game_id, game_title, game_image, game_date):
+        calendar_releases = self.get_calendar_releases()
+        if any(d['id'] == game_id for d in calendar_releases):
+            calendar_releases.remove({'id': game_id, 'title': game_title, 'url': game_image, 'date': game_date})
+        else:
+            calendar_releases.append(
+                {'id': game_id, 'title': game_title, 'url': game_image, 'date': game_date})
+        self.update_document(calendar_releases=calendar_releases)
+
+    def remove_forum_followed(self, forum):
+        forums_followed = self.get_forums_followed()
+
+        forums_followed.remove(u'{0}'.format(forum))
+
+    def add_or_remove_followed_user(self, user):
+        if user:
+            followed_users = self.get_followed_users()
+            if user in followed_users:
+                followed_users.remove(u'{0}'.format(user))
+            else:
+                followed_users.append(u'{}'.format(user))
+            self.update_document(followed_users=followed_users)
+    
+    def get_info_followed_users(self):
+            followed_users = self.get_followed_users()
+            # Create array with the email and photo of the users followed
+            info_followed_users = []
+            for user in followed_users:
+                user_info = AccountModel.find_account(email=user)
+                user = user_info.json()['value']
+                info_followed_users.append({'email': user['email'], 'photo': user['photo']})
+            return info_followed_users
 
     @classmethod
     def find_account(cls, email=None, id=None):
@@ -198,7 +379,6 @@ def verify_password(token, password):
         if password and account.verify_password(password=password):
             g.user = account
         return account
-
 
 
 @auth.get_user_roles
